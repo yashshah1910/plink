@@ -13,8 +13,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Plink",
-  description: "Save for the future, one plink at a time.",
+  title: "Plink - Save for the future, one plink at a time",
+  description: "Create secure, time-locked digital piggy banks for your children. Family and friends can easily gift USDC via a simple link, building a permanent digital memory book on the Flow blockchain.",
+  keywords: ["crypto", "savings", "children", "USDC", "Flow blockchain", "digital piggy bank", "time-locked", "family gifting"],
+  authors: [{ name: "Plink Team" }],
+  openGraph: {
+    title: "Plink - Save for the future, one plink at a time",
+    description: "Create secure, time-locked digital piggy banks for your children. Family and friends can easily gift USDC via a simple link.",
+    type: "website",
+    siteName: "Plink",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Plink - Save for the future, one plink at a time",
+    description: "Create secure, time-locked digital piggy banks for your children. Family and friends can easily gift USDC via a simple link.",
+  },
 };
 
 export default function RootLayout({
@@ -23,9 +36,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
       >
         {children}
       </body>

@@ -1,26 +1,182 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Light mode - Plink brand colors */
+  --background: #f8fafc; /* Slate 50 */
+  --foreground: #1e293b; /* Slate 800 */
+  --primary: #4f46e5; /* Indigo 600 */
+  --primary-foreground: #ffffff;
+  --secondary: #64748b; /* Slate 500 */
+  --accent: #10b981; /* Emerald 500 */
+  --muted: #f1f5f9; /* Slate 100 */
+  --border: #e2e8f0; /* Slate 200 */
+  --ring: #4f46e5; /* Indigo 600 */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+  /* Dark mode - Plink brand colors */
+  --background: #1e293b; /* Slate 800 */
+  --foreground: #f8fafc; /* Slate 50 */
+  --primary: #6366f1; /* Indigo 500 */
+  --primary-foreground: #ffffff;
+  --secondary: #94a3b8; /* Slate 400 */
+  --accent: #34d399; /* Emerald 400 */
+  --muted: #334155; /* Slate 700 */
+  --border: #475569; /* Slate 600 */
+  --ring: #6366f1; /* Indigo 500 */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: hsl(var(--border));
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
+
+/* Smooth animations */
+* {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Custom animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+    transform: translate3d(0, 0, 0);
+  }
+  40%, 43% {
+    animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+    transform: translate3d(0, -8px, 0);
+  }
+  70% {
+    animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+    transform: translate3d(0, -4px, 0);
+  }
+  90% {
+    transform: translate3d(0, -2px, 0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--secondary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Grid background pattern */
+.bg-grid-slate-100 {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='rgb(148 163 184 / 0.05)'%3e%3cpath d='m0 .5h32m-32 8h32m-32 8h32m-32 8h32'/%3e%3cpath d='m.5 0v32m8-32v32m8-32v32m8-32v32'/%3e%3c/svg%3e");
+}
+
+.bg-grid-slate-700\/25 {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='rgb(51 65 85 / 0.25)'%3e%3cpath d='m0 .5h32m-32 8h32m-32 8h32m-32 8h32'/%3e%3cpath d='m.5 0v32m8-32v32m8-32v32m8-32v32'/%3e%3c/svg%3e");
+}
+
+/* Utility classes for Tailwind CSS v4 */
+.bg-background { background-color: var(--background); }
+.bg-foreground { background-color: var(--foreground); }
+.bg-primary { background-color: var(--primary); }
+.bg-primary\/10 { background-color: color-mix(in srgb, var(--primary) 10%, transparent); }
+.bg-primary\/20 { background-color: color-mix(in srgb, var(--primary) 20%, transparent); }
+.bg-primary\/5 { background-color: color-mix(in srgb, var(--primary) 5%, transparent); }
+.bg-secondary { background-color: var(--secondary); }
+.bg-accent { background-color: var(--accent); }
+.bg-accent\/10 { background-color: color-mix(in srgb, var(--accent) 10%, transparent); }
+.bg-accent\/20 { background-color: color-mix(in srgb, var(--accent) 20%, transparent); }
+.bg-muted { background-color: var(--muted); }
+.bg-muted\/30 { background-color: color-mix(in srgb, var(--muted) 30%, transparent); }
+.bg-muted\/80 { background-color: color-mix(in srgb, var(--muted) 80%, transparent); }
+.bg-muted\/50 { background-color: color-mix(in srgb, var(--muted) 50%, transparent); }
+
+.text-foreground { color: var(--foreground); }
+.text-primary { color: var(--primary); }
+.text-primary-foreground { color: var(--primary-foreground); }
+.text-secondary { color: var(--secondary); }
+.text-accent { color: var(--accent); }
+
+.border-border { border-color: var(--border); }
+.border-primary { border-color: var(--primary); }
+.border-primary\/20 { border-color: color-mix(in srgb, var(--primary) 20%, transparent); }
+.border-primary\/30 { border-color: color-mix(in srgb, var(--primary) 30%, transparent); }
+.border-primary\/50 { border-color: color-mix(in srgb, var(--primary) 50%, transparent); }
+.border-border\/40 { border-color: color-mix(in srgb, var(--border) 40%, transparent); }
+.border-border\/50 { border-color: color-mix(in srgb, var(--border) 50%, transparent); }
+.border-accent\/20 { border-color: color-mix(in srgb, var(--accent) 20%, transparent); }
+
+.hover\:bg-primary\/90:hover { background-color: color-mix(in srgb, var(--primary) 90%, transparent); }
+.hover\:bg-primary\/10:hover { background-color: color-mix(in srgb, var(--primary) 10%, transparent); }
+.hover\:bg-primary:hover { background-color: var(--primary); }
+.hover\:text-primary-foreground:hover { color: var(--primary-foreground); }
+.hover\:text-foreground:hover { color: var(--foreground); }
+
+.focus\:ring-primary\/50:focus { 
+  outline: none; 
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 50%, transparent); 
+}
+
+/* Gradient text utilities */
+.bg-gradient-to-r { background: linear-gradient(to right, var(--primary), var(--accent)); }
+.bg-clip-text { background-clip: text; }
+.text-transparent { color: transparent; }
