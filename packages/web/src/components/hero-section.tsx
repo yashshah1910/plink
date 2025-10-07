@@ -50,22 +50,6 @@ export function HeroSection() {
                 Watch Demo
               </Button>
             </div>
-
-            {/* Stats */}
-            <div className="flex flex-wrap gap-8 pt-8 border-t border-border/50">
-              <div className="text-center sm:text-left">
-                <div className="text-2xl font-bold text-foreground">$2.5M+</div>
-                <div className="text-sm text-secondary">Saved for the future</div>
-              </div>
-              <div className="text-center sm:text-left">
-                <div className="text-2xl font-bold text-foreground">10K+</div>
-                <div className="text-sm text-secondary">Happy families</div>
-              </div>
-              <div className="text-center sm:text-left">
-                <div className="text-2xl font-bold text-foreground">50K+</div>
-                <div className="text-sm text-secondary">Gifts sent</div>
-              </div>
-            </div>
           </div>
 
           {/* Visual */}
