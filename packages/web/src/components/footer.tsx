@@ -24,7 +24,8 @@ export function Footer() {
             <div className="flex items-center space-x-4">
               {/* Social Links */}
               <a
-                href="#"
+                href="https://x.com/getplinkxyz"
+                target="_blank"
                 className="w-8 h-8 bg-muted hover:bg-primary/10 rounded-lg flex items-center justify-center transition-colors"
                 aria-label="Twitter"
               >
