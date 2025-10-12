@@ -1,6 +1,6 @@
 import "Plink"
 
-// Define a public struct to hold Stash data
+// Define a struct to hold the data for each Stash
 access(all) struct StashData {
     access(all) let id: UInt64
     access(all) let ownerName: String
@@ -17,20 +17,20 @@ access(all) struct StashData {
 
 access(all) fun main(account: Address): [StashData] {
     // Get the public capability for the Plink Collection
-    let publicCapability = getAccount(account)
+    let capability = getAccount(account)
         .capabilities.get<&{Plink.CollectionPublic}>(Plink.CollectionPublicPath)
 
     // Borrow the capability to get a reference to the collection
-    let collectionRef = publicCapability.borrow()
-        ?? panic("Could not borrow reference to the collection")
+    let collectionRef = capability.borrow()
+        ?? panic("Could not borrow a reference to the Stash Collection")
 
     // Get all Stash IDs
     let stashIDs = collectionRef.getIDs()
 
-    // Create an array to hold the results
+    // Create results array
     let results: [StashData] = []
 
-    // Loop through each ID and collect Stash data
+    // Loop through each ID and get Stash data
     for id in stashIDs {
         if let stashRef = collectionRef.borrowStash(id: id) {
             let stashData = StashData(

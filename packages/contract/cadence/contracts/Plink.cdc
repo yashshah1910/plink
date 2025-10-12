@@ -1,53 +1,89 @@
 access(all) contract Plink {
-
+    
     // Storage and Public paths for the Collection
     access(all) let CollectionStoragePath: StoragePath
     access(all) let CollectionPublicPath: PublicPath
 
     // Events
     access(all) event StashCreated(id: UInt64, ownerName: String, unlockDate: UFix64)
-    access(all) event StashDeposited(id: UInt64, amount: UFix64)
+    access(all) event StashDeposit(id: UInt64, amount: UFix64)
+    access(all) event StashWithdraw(id: UInt64, amount: UFix64)
 
-    // Public interface for the Collection
-    access(all) resource interface CollectionPublic {
-        access(all) view fun getIDs(): [UInt64]
-        access(all) view fun borrowStash(id: UInt64): &Stash?
+    // Vault interface for future FungibleToken compatibility
+    access(all) resource interface VaultInterface {
+        access(all) var balance: UFix64
+        access(all) fun deposit(amount: UFix64)
+        access(all) fun withdraw(amount: UFix64): UFix64
+        access(all) view fun getBalance(): UFix64
+    }
+
+    // Vault resource that mimics FungibleToken.Vault behavior
+    access(all) resource Vault: VaultInterface {
+        access(all) var balance: UFix64
+
+        init() {
+            self.balance = 0.0
+        }
+
+        access(all) fun deposit(amount: UFix64) {
+            self.balance = self.balance + amount
+        }
+
+        access(all) fun withdraw(amount: UFix64): UFix64 {
+            pre {
+                self.balance >= amount: "Insufficient balance"
+            }
+            self.balance = self.balance - amount
+            return amount
+        }
+
+        access(all) view fun getBalance(): UFix64 {
+            return self.balance
+        }
     }
 
     // Stash resource representing a time-locked savings vault
     access(all) resource Stash {
         access(all) let ownerName: String
         access(all) let unlockDate: UFix64
-        access(all) var balance: UFix64
+        access(all) let vault: @Vault
 
         init(ownerName: String, unlockDate: UFix64) {
             self.ownerName = ownerName
             self.unlockDate = unlockDate
-            self.balance = 0.0
+            self.vault <- create Vault()
             
             emit StashCreated(id: self.uuid, ownerName: ownerName, unlockDate: unlockDate)
         }
 
         // Function to deposit funds into the stash
         access(all) fun deposit(amount: UFix64) {
-            self.balance = self.balance + amount
-            emit StashDeposited(id: self.uuid, amount: amount)
+            self.vault.deposit(amount: amount)
+            emit StashDeposit(id: self.uuid, amount: amount)
         }
 
         // Function to withdraw funds (only after unlock date)
         access(all) fun withdraw(amount: UFix64): UFix64 {
             pre {
                 getCurrentBlock().timestamp >= self.unlockDate: "Stash is still locked"
-                self.balance >= amount: "Insufficient balance in stash"
+                self.vault.balance >= amount: "Insufficient balance in stash"
             }
-            self.balance = self.balance - amount
-            return amount
+            
+            let withdrawnAmount = self.vault.withdraw(amount: amount)
+            emit StashWithdraw(id: self.uuid, amount: withdrawnAmount)
+            return withdrawnAmount
         }
 
         // Function to get the current balance
         access(all) view fun getBalance(): UFix64 {
-            return self.balance
+            return self.vault.getBalance()
         }
+    }
+
+    // Public interface for the Collection
+    access(all) resource interface CollectionPublic {
+        access(all) view fun getIDs(): [UInt64]
+        access(all) view fun borrowStash(id: UInt64): &Stash?
     }
 
     // Collection resource to hold multiple Stashes
@@ -73,13 +109,6 @@ access(all) contract Plink {
         // Function to safely borrow a reference to a Stash
         access(all) view fun borrowStash(id: UInt64): &Stash? {
             return &self.stashes[id]
-        }
-
-        // Function to withdraw a Stash from the collection
-        access(all) fun withdraw(id: UInt64): @Stash {
-            let stash <- self.stashes.remove(key: id) 
-                ?? panic("Stash not found")
-            return <-stash
         }
     }
 

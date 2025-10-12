@@ -3,29 +3,26 @@ import "Plink"
 transaction(ownerName: String, unlockDate: UFix64) {
 
     prepare(signer: auth(Storage, Capabilities) &Account) {
-        // Check if a Plink Collection already exists at the storage path
+        
+        // Step 1: Set up the Collection if it doesn't exist
         if signer.storage.borrow<&Plink.Collection>(from: Plink.CollectionStoragePath) == nil {
-            // Create a new empty collection
-            let collection <- Plink.createEmptyCollection()
-            
-            // Save the collection to storage
-            signer.storage.save(<-collection, to: Plink.CollectionStoragePath)
+            // Create a new empty collection and save it to the account's storage
+            signer.storage.save(<-Plink.createEmptyCollection(), to: Plink.CollectionStoragePath)
             
             // Create and publish a public capability
             let capability = signer.capabilities.storage.issue<&{Plink.CollectionPublic}>(Plink.CollectionStoragePath)
             signer.capabilities.publish(capability, at: Plink.CollectionPublicPath)
         }
-
-        // Create a new Stash
+        
+        // Step 2: Create the new Stash
         let newStash <- Plink.createStash(ownerName: ownerName, unlockDate: unlockDate)
-
-        // Borrow a reference to the user's collection
+        
+        // Step 3: Deposit the Stash into the user's Collection
         let collectionRef = signer.storage.borrow<&Plink.Collection>(from: Plink.CollectionStoragePath)
-            ?? panic("Could not borrow reference to collection")
-
-        // Deposit the new Stash into the collection
+            ?? panic("Could not borrow a reference to the Stash Collection")
+        
         collectionRef.deposit(stash: <-newStash)
 
-        log("Stash created for ".concat(ownerName))
+        log("✅ Stash created successfully for ".concat(ownerName))
     }
 }

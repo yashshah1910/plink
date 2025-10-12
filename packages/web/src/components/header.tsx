@@ -2,35 +2,71 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "./ui/button";
 import { ThemeToggle } from "./ui/theme-toggle";
+import { useUser } from "@/context/UserContext";
 import PlinkLogo from "@/assets/images/PlinkLogo.png";
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, logIn, logOut, isLoggedIn, address, loading } = useUser();
+
+  // Function to format address for display
+  const formatAddress = (addr: string) => {
+    if (!addr) return "";
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4 mx-auto max-w-7xl">
         {/* Logo */}
-        <div className="flex items-center space-x-2 bg-slate-50 p-1 rounded-lg">
-          <Image
-            src={PlinkLogo}
-            alt="Plink Logo"
-            width={48}
-            height={48}
-          />
-        </div>
+        <Link
+          href="/"
+          className="flex items-center space-x-2 bg-slate-50 p-1 rounded-lg hover:bg-slate-100 transition-colors"
+        >
+          <Image src={PlinkLogo} alt="Plink Logo" width={48} height={48} />
+        </Link>
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center space-x-4">
           <ThemeToggle />
-          <Button variant="outline" size="sm">
-            Create Your First Stash
-          </Button>
+
+          {loading ? (
+            <div className="w-24 h-8 bg-muted animate-pulse rounded"></div>
+          ) : isLoggedIn ? (
+            <div className="flex items-center space-x-3">
+              <Link href="/dashboard">
+                <Button variant="outline" size="sm">
+                  Dashboard
+                </Button>
+              </Link>
+              <div className="flex items-center space-x-2 bg-muted px-3 py-1 rounded-lg">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-sm font-mono">
+                  {formatAddress(address)}
+                </span>
+              </div>
+              <Button onClick={logOut} variant="secondary" size="sm">
+                Log Out
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <Button onClick={logIn} variant="outline" size="sm">
+                Connect Wallet
+              </Button>
+              <Link href="/dashboard/create">
+                <Button variant="primary" size="sm">
+                  Create Your First Stash
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
 
-        {/* Mobile Menu Button */}
+        {/* Mobile Menu */}
         <div className="flex md:hidden items-center space-x-2">
           <ThemeToggle />
           <button
@@ -68,9 +104,47 @@ export function Header() {
       {isMobileMenuOpen && (
         <div className="md:hidden border-t border-border/40 bg-background/95 backdrop-blur">
           <div className="container px-4 py-4 space-y-4">
-            <Button variant="outline" size="sm" className="w-full">
-              Create Your First Stash
-            </Button>
+            {loading ? (
+              <div className="w-full h-8 bg-muted animate-pulse rounded"></div>
+            ) : isLoggedIn ? (
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2 bg-muted px-3 py-2 rounded-lg">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-sm font-mono">
+                    {formatAddress(address)}
+                  </span>
+                </div>
+                <Link href="/dashboard">
+                  <Button variant="outline" size="sm" className="w-full">
+                    Dashboard
+                  </Button>
+                </Link>
+                <Button
+                  onClick={logOut}
+                  variant="secondary"
+                  size="sm"
+                  className="w-full"
+                >
+                  Log Out
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <Button
+                  onClick={logIn}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                >
+                  Connect Wallet
+                </Button>
+                <Link href="/dashboard/create">
+                  <Button variant="primary" size="sm" className="w-full">
+                    Create Your First Stash
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}
