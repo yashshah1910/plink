@@ -26,7 +26,7 @@ export function Header() {
         <div className="hidden md:flex items-center space-x-4">
           <ThemeToggle />
           <Button variant="outline" size="sm">
-            Connect Wallet
+            Create Your First Stash
           </Button>
         </div>
 
@@ -69,7 +69,7 @@ export function Header() {
         <div className="md:hidden border-t border-border/40 bg-background/95 backdrop-blur">
           <div className="container px-4 py-4 space-y-4">
             <Button variant="outline" size="sm" className="w-full">
-              Connect Wallet
+              Create Your First Stash
             </Button>
           </div>
         </div>
