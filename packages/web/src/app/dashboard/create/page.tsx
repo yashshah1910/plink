@@ -5,6 +5,8 @@ import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Footer } from "@/components/footer";
+import { Header } from "@/components/header";
 import * as fcl from "@onflow/fcl";
 
 export default function CreateStash() {
@@ -111,133 +113,277 @@ export default function CreateStash() {
 
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-6">
-          <h1 className="text-3xl font-bold">Connect Your Wallet</h1>
-          <p className="text-muted-foreground">
-            Please connect your Flow wallet to create a stash
-          </p>
-          <Button onClick={logIn} size="lg">
-            Connect Wallet
-          </Button>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,#fff,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.5))]" />
+
+        <div className="relative flex items-center justify-center min-h-screen">
+          <div className="text-center space-y-6 animate-fade-in-up">
+            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center animate-float">
+              <svg
+                className="w-12 h-12 text-primary"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
+              </svg>
+            </div>
+            <h1 className="text-4xl font-bold text-foreground">
+              Connect Your Wallet
+            </h1>
+            <p className="text-lg text-secondary max-w-md mx-auto">
+              Please connect your Flow wallet to create a new Stash
+            </p>
+            <Button
+              onClick={logIn}
+              size="lg"
+              className="shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
+              </svg>
+              Connect Wallet
+            </Button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4"
-          >
-            <svg
-              className="w-4 h-4 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,#fff,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.5))]" />
+
+      {/* Header */}
+      <Header />
+
+      <div className="relative">
+        {/* Main Content */}
+        <div className="container mx-auto px-4 py-12 max-w-7xl">
+          {/* Header Section */}
+          <div className="text-center mb-16 animate-fade-in-up">
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium border border-primary/20 mb-6 animate-float hover:bg-primary/20 transition-colors"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            Back to Dashboard
-          </Link>
-          <h1 className="text-3xl font-bold">Create New Stash</h1>
-          <p className="text-muted-foreground mt-2">
-            Set up a digital piggy bank for your child's future
-          </p>
-        </div>
-
-        {/* Form */}
-        <div className="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Child's Name */}
-            <div>
-              <label
-                htmlFor="childName"
-                className="block text-sm font-medium mb-2"
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                Child's Name
-              </label>
-              <input
-                type="text"
-                id="childName"
-                name="childName"
-                value={formData.childName}
-                onChange={handleInputChange}
-                placeholder="Enter your child's name"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                required
-                disabled={loading}
-              />
-            </div>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+              <span>Back to Dashboard</span>
+            </Link>
+            <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
+              Create New{" "}
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Stash
+              </span>
+            </h1>
+            <p className="text-lg text-secondary max-w-2xl mx-auto">
+              Set up a digital piggy bank for your child's future and watch
+              their savings grow
+            </p>
+          </div>
 
-            {/* Unlock Date */}
-            <div>
-              <label
-                htmlFor="unlockDate"
-                className="block text-sm font-medium mb-2"
-              >
-                Unlock Date
-              </label>
-              <input
-                type="date"
-                id="unlockDate"
-                name="unlockDate"
-                value={formData.unlockDate}
-                onChange={handleInputChange}
-                min={new Date().toISOString().split("T")[0]}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                required
-                disabled={loading}
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                The stash will be locked until this date
-              </p>
-            </div>
-
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4">
-                <p className="text-red-600 dark:text-red-300 text-sm">
-                  {error}
-                </p>
-              </div>
-            )}
-
-            {/* Submit Button */}
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Creating Stash...
+          {/* Form Container */}
+          <div className="max-w-lg mx-auto">
+            <div className="bg-background/80 backdrop-blur-sm border border-border/50 rounded-2xl shadow-2xl p-8 animate-fade-in-up">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Child's Name */}
+                <div>
+                  <label
+                    htmlFor="childName"
+                    className="block text-sm font-semibold mb-3 text-foreground"
+                  >
+                    Child's Name
+                  </label>
+                  <input
+                    type="text"
+                    id="childName"
+                    name="childName"
+                    value={formData.childName}
+                    onChange={handleInputChange}
+                    placeholder="Enter your child's name"
+                    className="w-full px-4 py-3 border-2 border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-muted/50 text-foreground placeholder-secondary"
+                    required
+                    disabled={loading}
+                  />
                 </div>
-              ) : (
-                "Create Stash"
-              )}
-            </Button>
-          </form>
 
-          {/* Info */}
-          <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">
-              How it works
-            </h3>
-            <ul className="text-xs text-blue-600 dark:text-blue-300 space-y-1">
-              <li>• Your stash will be created on the Flow blockchain</li>
-              <li>• It will be locked until the unlock date you specify</li>
-              <li>• Family and friends can add funds to the stash</li>
-              <li>• Funds can only be withdrawn after the unlock date</li>
-            </ul>
+                {/* Unlock Date */}
+                <div>
+                  <label
+                    htmlFor="unlockDate"
+                    className="block text-sm font-semibold mb-3 text-foreground"
+                  >
+                    Unlock Date
+                  </label>
+                  <input
+                    type="date"
+                    id="unlockDate"
+                    name="unlockDate"
+                    value={formData.unlockDate}
+                    onChange={handleInputChange}
+                    min={new Date().toISOString().split("T")[0]}
+                    className="w-full px-4 py-3 border-2 border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-muted/50 text-foreground"
+                    required
+                    disabled={loading}
+                  />
+                  <p className="text-xs text-secondary mt-2 flex items-center space-x-1">
+                    <svg
+                      className="w-3 h-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                      />
+                    </svg>
+                    <span>The stash will be locked until this date</span>
+                  </p>
+                </div>
+
+                {/* Error Message */}
+                {error && (
+                  <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-700 rounded-xl p-4">
+                    <div className="flex items-center space-x-2">
+                      <svg
+                        className="w-5 h-5 text-red-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <p className="text-red-600 dark:text-red-300 text-sm font-medium">
+                        {error}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  className="w-full h-12 text-lg button-hover-lift relative overflow-hidden"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="relative">
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <div className="absolute inset-0 w-5 h-5 border-2 border-transparent border-t-white/60 rounded-full animate-spin animation-delay-150" />
+                      </div>
+                      <span>Creating Stash...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center space-x-2">
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                        />
+                      </svg>
+                      <span>Create Stash</span>
+                    </div>
+                  )}
+
+                  {/* Shimmer effect when not loading */}
+                  {!loading && (
+                    <div className="absolute inset-0 -top-px animate-shimmer opacity-0 hover:opacity-100 transition-opacity" />
+                  )}
+                </Button>
+              </form>
+
+              {/* Info Section */}
+              <div className="mt-8 p-6 bg-primary/5 border border-primary/20 rounded-xl">
+                <h3 className="text-sm font-semibold text-primary mb-3 flex items-center space-x-2">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <span>How it works</span>
+                </h3>
+                <ul className="text-xs text-secondary space-y-2">
+                  <li className="flex items-start space-x-2">
+                    <span className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0"></span>
+                    <span>
+                      Your stash will be created on the Flow blockchain
+                    </span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0"></span>
+                    <span>
+                      It will be locked until the unlock date you specify
+                    </span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0"></span>
+                    <span>Family and friends can add funds to the stash</span>
+                  </li>
+                  <li className="flex items-start space-x-2">
+                    <span className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5 flex-shrink-0"></span>
+                    <span>
+                      Funds can only be withdrawn after the unlock date
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
+        {/* Footer */}
+        <Footer />
       </div>
     </div>
   );

@@ -42,6 +42,14 @@ export function Header() {
                   Dashboard
                 </Button>
               </Link>
+
+              {/* Primary CTA for creating a new stash (desktop) */}
+              <Link href="/dashboard/create">
+                <Button variant="primary" size="sm" className="hidden md:inline-flex">
+                  Create New Stash
+                </Button>
+              </Link>
+
               <div className="flex items-center space-x-2 bg-muted px-3 py-1 rounded-lg">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <span className="text-sm font-mono">
@@ -114,6 +122,11 @@ export function Header() {
                     {formatAddress(address)}
                   </span>
                 </div>
+                <Link href="/dashboard/create">
+                  <Button variant="primary" size="sm" className="w-full">
+                    Create New Stash
+                  </Button>
+                </Link>
                 <Link href="/dashboard">
                   <Button variant="outline" size="sm" className="w-full">
                     Dashboard

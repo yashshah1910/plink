@@ -5,6 +5,9 @@ import { useUser } from "@/context/UserContext";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { formatAddress } from "@/lib/utils";
+import AddFundsModal from "@/components/AddFundsModal";
+import { Footer } from "@/components/footer";
+import { Header } from "@/components/header";
 import * as fcl from "@onflow/fcl";
 
 interface Stash {
@@ -20,6 +23,10 @@ export default function Dashboard() {
   const [stashes, setStashes] = useState<Stash[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedStash, setSelectedStash] = useState<{ id: number; name: string } | null>(null);
 
   useEffect(() => {
     if (isLoggedIn && user?.addr) {
@@ -114,64 +121,104 @@ const formatAmount = (amount: number | string) => {
 
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-6">
-          <h1 className="text-3xl font-bold">Connect Your Wallet</h1>
-          <p className="text-muted-foreground">
-            Please connect your Flow wallet to access your dashboard
-          </p>
-          <Button onClick={logIn} size="lg">
-            Connect Wallet
-          </Button>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,#fff,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.5))]" />
+        
+        <div className="relative flex items-center justify-center min-h-screen">
+          <div className="text-center space-y-6 animate-fade-in-up">
+            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center animate-float">
+              <svg className="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <h1 className="text-4xl font-bold text-foreground">Connect Your Wallet</h1>
+            <p className="text-lg text-secondary max-w-md mx-auto">
+              Please connect your Flow wallet to access your dashboard and manage your Stashes
+            </p>
+            <Button onClick={logIn} size="lg" className="shadow-lg hover:shadow-xl transition-all duration-300">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Connect Wallet
+            </Button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Your Stashes</h1>
-            <p className="text-muted-foreground">
-              Connected as {formatAddress(user?.addr || "")}
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,#fff,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.5))]" />
+      
+      {/* Header */}
+      <Header />
+      
+      <div className="relative">
+        {/* Main Content */}
+        <div className="container mx-auto px-4 py-12 max-w-7xl">
+          {/* Header Section */}
+          <div className="text-center mb-16 animate-fade-in-up">
+            <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium border border-primary/20 mb-6 animate-float">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+              </svg>
+              <span>Connected as {formatAddress(user?.addr || "")}</span>
+            </div>
+            <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
+              Your Digital{' '}
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Stashes
+              </span>
+            </h1>
+            <p className="text-lg text-secondary max-w-2xl mx-auto mb-8">
+              Manage your time-locked savings accounts and watch your children's future grow
             </p>
           </div>
-          <Link href="/dashboard/create">
-            <Button size="lg">Create New Stash</Button>
-          </Link>
-        </div>
 
         {/* Loading State */}
         {loading && (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="flex justify-center items-center py-20">
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+              <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-primary/60 rounded-full animate-spin animation-delay-150"></div>
+            </div>
           </div>
         )}
 
         {/* Error State */}
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-6 mb-6">
-            <h3 className="text-red-800 dark:text-red-200 font-medium">
-              Error
-            </h3>
-            <p className="text-red-600 dark:text-red-300 mt-1">{error}</p>
-            <Button onClick={loadStashes} variant="outline" className="mt-4">
-              Try Again
-            </Button>
+          <div className="max-w-md mx-auto">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl p-8 text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+                Oops! Something went wrong
+              </h3>
+              <p className="text-red-600 dark:text-red-300 mb-6">{error}</p>
+              <Button onClick={loadStashes} variant="outline" className="shadow-sm">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Try Again
+              </Button>
+            </div>
           </div>
         )}
 
-        {/* Stashes Grid */}
+        {/* Stashes Content */}
         {!loading && !error && (
-          <>
+          <div className="animate-fade-in-up">
             {stashes.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+              <div className="text-center py-20">
+                <div className="w-32 h-32 mx-auto mb-8 rounded-full bg-primary/10 flex items-center justify-center animate-float">
                   <svg
-                    className="w-12 h-12 text-blue-600 dark:text-blue-400"
+                    className="w-16 h-16 text-primary"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -179,86 +226,111 @@ const formatAmount = (amount: number | string) => {
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      strokeWidth={2}
+                      strokeWidth={1.5}
                       d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
                     />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold mb-2">No Stashes Yet</h3>
-                <p className="text-muted-foreground mb-6">
+                <h3 className="text-2xl font-bold text-foreground mb-4">No Stashes Yet</h3>
+                <p className="text-secondary text-lg mb-8 max-w-md mx-auto">
                   Create your first digital piggy bank to start saving for your
-                  child's future
+                  child's future. Build memories and secure their tomorrow.
                 </p>
                 <Link href="/dashboard/create">
-                  <Button size="lg">Create Your First Stash</Button>
+                  <Button size="lg" className="shadow-lg hover:shadow-xl transition-all duration-300 group">
+                    <svg className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Create Your First Stash
+                  </Button>
                 </Link>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {stashes.map((stash) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {stashes.map((stash, index) => (
                   <div
                     key={stash.id}
-                    className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
+                    className={`bg-background/80 backdrop-blur-sm border border-border/50 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 group card-slide-in delay-${Math.min(index * 100, 500)} relative`}
                   >
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    
                     {/* Stash Header */}
-                    <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-4 text-white">
-                      <h3 className="font-semibold text-lg">
-                        {stash.ownerName}'s Stash
-                      </h3>
-                      <p className="text-blue-100 text-sm">
-                        Unlocks on {formatDate(stash.unlockDate)}
-                      </p>
+                    <div className="relative bg-gradient-to-r from-primary to-accent p-6 text-primary-foreground">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-bold text-xl mb-1">
+                            {stash.ownerName}'s Stash
+                          </h3>
+                          <p className="text-primary-foreground/80 text-sm">
+                            Unlocks on {formatDate(stash.unlockDate)}
+                          </p>
+                        </div>
+                        <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                          </svg>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Balance */}
-                    <div className="p-4">
-                      <div className="flex justify-between items-center mb-4">
-                        <span className="text-sm text-muted-foreground">
-                          Current Balance
-                        </span>
-                        <span className="text-2xl font-bold text-blue-600">
-                          {formatAmount(stash.balance)} FLOW
-                        </span>
+                    {/* Content */}
+                    <div className="relative p-6 space-y-6">
+                      {/* Balance Display */}
+                      <div className="text-center">
+                        <p className="text-sm text-secondary mb-2">Current Balance</p>
+                        <div className="text-3xl font-bold text-primary hover:scale-105 transition-transform cursor-default">
+                          {formatAmount(stash.balance)} 
+                          <span className="text-lg font-medium text-secondary ml-1">FLOW</span>
+                        </div>
                       </div>
 
-                      {/* Status */}
-                      <div className="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center space-x-2">
-                          <div
-                            className={`w-2 h-2 rounded-full ${
-                              stash.isLocked ? "bg-red-500" : "bg-green-500"
-                            }`}
-                          ></div>
-                          <span className="text-sm">
-                            {stash.isLocked ? "Locked" : "Unlocked"}
-                          </span>
+                      {/* Status Badge */}
+                      <div className="flex justify-center">
+                        <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium ${
+                          stash.isLocked 
+                            ? 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-700' 
+                            : 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-700'
+                        }`}>
+                          <div className={`w-2 h-2 rounded-full ${stash.isLocked ? 'bg-red-500' : 'bg-green-500'}`} />
+                          <span>{stash.isLocked ? 'Locked' : 'Unlocked'}</span>
                         </div>
                       </div>
 
                       {/* Actions */}
-                      <div className="mt-4 space-y-2">
+                      <div className="space-y-3">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="w-full"
+                          className="w-full button-hover-lift group border-2 hover:border-primary"
                           onClick={() => {
-                            // TODO: Implement add funds functionality
-                            console.log("Add funds to stash:", stash.id);
+                            setSelectedStash({ id: stash.id, name: stash.ownerName });
+                            setIsModalOpen(true);
                           }}
                         >
-                          Add Funds
+                          <div className="flex items-center justify-center space-x-2">
+                            <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            <span>Add Funds</span>
+                          </div>
                         </Button>
                         {!stash.isLocked && (
                           <Button
                             variant="secondary"
                             size="sm"
-                            className="w-full"
+                            className="w-full button-hover-lift group"
                             onClick={() => {
                               // TODO: Implement withdraw functionality
                               console.log("Withdraw from stash:", stash.id);
                             }}
                           >
-                            Withdraw
+                            <div className="flex items-center justify-center space-x-2">
+                              <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span>Withdraw</span>
+                            </div>
                           </Button>
                         )}
                       </div>
@@ -267,8 +339,26 @@ const formatAmount = (amount: number | string) => {
                 ))}
               </div>
             )}
-          </>
+          </div>
         )}
+        </div>
+        
+        {/* Footer */}
+        <Footer />
+        
+        {/* Add Funds Modal */}
+        <AddFundsModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedStash(null);
+          }}
+          stashId={selectedStash?.id || 0}
+          stashName={selectedStash?.name || ''}
+          onSuccess={() => {
+            loadStashes(); // Refresh the stashes list
+          }}
+        />
       </div>
     </div>
   );
