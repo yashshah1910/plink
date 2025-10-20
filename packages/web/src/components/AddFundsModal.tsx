@@ -85,6 +85,7 @@ export default function AddFundsModal({
 
       const transactionId = await fcl.mutate({
         cadence: addFundsTransaction,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         args: (arg: any, t: any) => [
           arg(user.addr, t.Address),
           arg(stashId.toString(), t.UInt64),
@@ -109,9 +110,10 @@ export default function AddFundsModal({
         throw new Error('Transaction failed');
       }
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error adding funds:', err);
-      setError(err.message || 'Failed to add funds. Please try again.');
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message || 'Failed to add funds. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -166,7 +168,7 @@ export default function AddFundsModal({
               </div>
               <div>
                 <h2 className="text-xl font-bold">Add Funds</h2>
-                <p className="text-blue-100 text-sm">To {stashName}'s Stash</p>
+                <p className="text-blue-100 text-sm">To {stashName}&apos;s Stash</p>
               </div>
             </div>
           </div>
@@ -183,8 +185,8 @@ export default function AddFundsModal({
                 <h3 className="text-lg font-semibold text-green-600 dark:text-green-400 mb-2">
                   Funds Added Successfully!
                 </h3>
-                <p className="text-muted-foreground text-sm">
-                  {amount} FLOW has been added to {stashName}'s stash
+                  <p className="text-muted-foreground text-sm">
+                  {amount} FLOW has been added to {stashName}&apos;s stash
                 </p>
               </div>
             ) : (

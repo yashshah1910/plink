@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
+import { useParams } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/header";
@@ -17,8 +17,7 @@ interface StashData {
 
 export default function PublicGiftingPage() {
   const params = useParams();
-  const router = useRouter();
-  const { user, isLoggedIn, logIn } = useUser();
+  const { isLoggedIn, logIn } = useUser();
   
   const recipientAddress = params.address as string;
   const stashId = params.id as string;
@@ -34,11 +33,7 @@ export default function PublicGiftingPage() {
   const [success, setSuccess] = useState(false);
   const [transactionId, setTransactionId] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadStashData();
-  }, [recipientAddress, stashId]);
-
-  const loadStashData = async () => {
+  const loadStashData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -86,6 +81,7 @@ export default function PublicGiftingPage() {
 
       const result = await fcl.query({
         cadence: getStashScript,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         args: (arg: any, t: any) => [
           arg(recipientAddress, t.Address),
           arg(stashId, t.UInt64)
@@ -102,13 +98,19 @@ export default function PublicGiftingPage() {
       } else {
         setError("Stash not found. Please check the link and try again.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error loading stash:", err);
-      setError("Failed to load stash information. Please try again.");
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message || "Failed to load stash information. Please try again.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [recipientAddress, stashId]);
+
+  useEffect(() => {
+    loadStashData();
+  }, [loadStashData]);
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -151,6 +153,7 @@ export default function PublicGiftingPage() {
 
       const txId = await fcl.mutate({
         cadence: addFundsTransaction,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         args: (arg: any, t: any) => [
           arg(recipientAddress, t.Address),
           arg(stashId, t.UInt64),
@@ -177,9 +180,10 @@ export default function PublicGiftingPage() {
         throw new Error("Transaction failed");
       }
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error sending gift:", err);
-      setError(err.message || "Failed to send gift. Please try again.");
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message || "Failed to send gift. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -263,12 +267,12 @@ export default function PublicGiftingPage() {
                   🎉 Gift Sent!
                 </h2>
                 <p className="text-lg text-secondary mb-6">
-                  Your gift of <span className="font-bold text-primary">${amount} FLOW</span> has been added to {stashData.ownerName}'s Stash!
+                  Your gift of <span className="font-bold text-primary">${amount} FLOW</span> has been added to {stashData.ownerName}&apos;s Stash!
                 </p>
 
                 {message && (
                   <div className="bg-background/50 rounded-lg p-4 mb-6">
-                    <p className="text-sm text-secondary italic">"{message}"</p>
+                    <p className="text-sm text-secondary italic">&ldquo;{message}&rdquo;</p>
                   </div>
                 )}
 
@@ -310,8 +314,8 @@ export default function PublicGiftingPage() {
                 
                 <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
                   You are sending a gift to{" "}
-                  <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                    {stashData.ownerName}'s Stash
+                    <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    {stashData.ownerName}&apos;s Stash
                   </span>
                 </h1>
                 
@@ -428,8 +432,8 @@ export default function PublicGiftingPage() {
 
                   {!isLoggedIn && (
                     <p className="text-xs text-center text-secondary">
-                      You'll need to connect your Flow wallet to send a gift
-                    </p>
+                        You&apos;ll need to connect your Flow wallet to send a gift
+                      </p>
                   )}
                 </div>
               </form>

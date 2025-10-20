@@ -10,7 +10,7 @@ import { Header } from "@/components/header";
 import * as fcl from "@onflow/fcl";
 
 export default function CreateStash() {
-  const { user, isLoggedIn, logIn } = useUser();
+  const { isLoggedIn, logIn } = useUser();
   const router = useRouter();
   const [formData, setFormData] = useState({
     childName: "",
@@ -84,6 +84,8 @@ export default function CreateStash() {
 
       const transactionId = await fcl.mutate({
         cadence: createStashTransaction,
+        // fcl args expect specific runtime 'arg' and 't' types from @onflow/fcl
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         args: (arg: any, t: any) => [
           arg(formData.childName.trim(), t.String),
           arg(unlockTimestamp.toFixed(1), t.UFix64),
@@ -103,9 +105,10 @@ export default function CreateStash() {
       } else {
         throw new Error("Transaction failed");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error creating stash:", err);
-      setError(err.message || "Failed to create stash. Please try again.");
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message || "Failed to create stash. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -205,7 +208,7 @@ export default function CreateStash() {
               </span>
             </h1>
             <p className="text-lg text-secondary max-w-2xl mx-auto">
-              Set up a digital piggy bank for your child's future and watch
+              Set up a digital piggy bank for your child&apos;s future and watch
               their savings grow
             </p>
           </div>
@@ -220,7 +223,7 @@ export default function CreateStash() {
                     htmlFor="childName"
                     className="block text-sm font-semibold mb-3 text-foreground"
                   >
-                    Child's Name
+                    Child&apos;s Name
                   </label>
                   <input
                     type="text"
@@ -228,7 +231,7 @@ export default function CreateStash() {
                     name="childName"
                     value={formData.childName}
                     onChange={handleInputChange}
-                    placeholder="Enter your child's name"
+                    placeholder="Enter your child&apos;s name"
                     className="w-full px-4 py-3 border-2 border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-muted/50 text-foreground placeholder-secondary"
                     required
                     disabled={loading}

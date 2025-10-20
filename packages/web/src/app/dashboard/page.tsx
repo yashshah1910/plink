@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useUser } from "@/context/UserContext";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -31,15 +31,11 @@ export default function Dashboard() {
   // Share/Copy state
   const [copiedStashId, setCopiedStashId] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (isLoggedIn && user?.addr) {
-      loadStashes();
-    } else {
+  const loadStashes = useCallback(async () => {
+    if (!user?.addr) {
       setLoading(false);
+      return;
     }
-  }, [isLoggedIn, user]);
-
-  const loadStashes = async () => {
     if (!user?.addr) return;
 
     try {
@@ -96,6 +92,7 @@ export default function Dashboard() {
 
       const result = await fcl.query({
         cadence: getStashesScript,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         args: (arg: any, t: any) => [arg(user.addr, t.Address)],
       });
 
@@ -104,14 +101,23 @@ export default function Dashboard() {
       } else {
         setStashes([]);
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Error loading stashes:", err);
-      setError("Failed to load stashes");
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message || "Failed to load stashes");
       setStashes([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.addr]);
+
+  useEffect(() => {
+    if (isLoggedIn && user?.addr) {
+      loadStashes();
+    } else {
+      setLoading(false);
+    }
+  }, [isLoggedIn, user?.addr, loadStashes]);
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp * 1000).toLocaleDateString();
@@ -201,7 +207,7 @@ const formatAmount = (amount: number | string) => {
               </span>
             </h1>
             <p className="text-lg text-secondary max-w-2xl mx-auto mb-8">
-              Manage your time-locked savings accounts and watch your children's future grow
+              Manage your time-locked savings accounts and watch your children&apos;s future grow
             </p>
           </div>
 
@@ -261,7 +267,7 @@ const formatAmount = (amount: number | string) => {
                 <h3 className="text-2xl font-bold text-foreground mb-4">No Stashes Yet</h3>
                 <p className="text-secondary text-lg mb-8 max-w-md mx-auto">
                   Create your first digital piggy bank to start saving for your
-                  child's future. Build memories and secure their tomorrow.
+                  child&apos;s future. Build memories and secure their tomorrow.
                 </p>
                 <Link href="/dashboard/create">
                   <Button size="lg" className="shadow-lg hover:shadow-xl transition-all duration-300 group">
@@ -287,7 +293,7 @@ const formatAmount = (amount: number | string) => {
                       <div className="flex items-center justify-between">
                         <div>
                           <h3 className="font-bold text-xl mb-1">
-                            {stash.ownerName}'s Stash
+                            {stash.ownerName}&apos;s Stash
                           </h3>
                           <p className="text-primary-foreground/80 text-sm">
                             Unlocks on {formatDate(stash.unlockDate)}

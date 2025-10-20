@@ -10,7 +10,7 @@ import PlinkLogo from "@/assets/images/PlinkLogo.png";
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, logIn, logOut, isLoggedIn, address, loading } = useUser();
+  const { logIn, logOut, isLoggedIn, address, loading } = useUser();
 
   // Function to format address for display
   const formatAddress = (addr: string) => {

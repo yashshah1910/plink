@@ -1,5 +1,3 @@
-import Image from 'next/image';
-
 export function TrustSecuritySection() {
   return (
     <section className="py-24 bg-muted/30">
