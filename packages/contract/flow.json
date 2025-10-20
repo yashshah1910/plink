@@ -1,42 +1,50 @@
 {
-	"contracts": {
-		"Plink": {
-			"source": "cadence/contracts/Plink.cdc",
-			"aliases": {
-				"emulator": "f8d6e0586b0a20c7"
-			}
-		}
-	},
-	"dependencies": {
-		"FungibleToken": {
-			"source": "testnet://9a0766d93b6608b7.FungibleToken",
-			"hash": "d84e41a86bd27806367b89c75a2a9570f7713480ab113cc214c4576466888958",
-			"aliases": {
-				"emulator": "ee82856bf20e2aa6",
-				"mainnet": "f233dcee88fe0abe",
-				"testnet": "9a0766d93b6608b7"
-			}
-		}
-	},
-	"networks": {
-		"emulator": "127.0.0.1:3569",
-		"mainnet": "access.mainnet.nodes.onflow.org:9000",
-		"testnet": "access.devnet.nodes.onflow.org:9000"
-	},
-	"accounts": {
-		"emulator-account": {
-			"address": "f8d6e0586b0a20c7",
-			"key": {
-				"type": "file",
-				"location": "emulator-account.pkey"
-			}
-		}
-	},
-	"deployments": {
-		"emulator": {
-			"emulator-account": [
-				"Plink"
-			]
-		}
-	}
+  "contracts": {
+    "Plink": {
+      "source": "cadence/contracts/Plink.cdc",
+      "aliases": {
+        "emulator": "f8d6e0586b0a20c7"
+      }
+    }
+  },
+  "dependencies": {
+    "FungibleToken": {
+      "source": "testnet://9a0766d93b6608b7.FungibleToken",
+      "hash": "d84e41a86bd27806367b89c75a2a9570f7713480ab113cc214c4576466888958",
+      "aliases": {
+        "emulator": "ee82856bf20e2aa6",
+        "mainnet": "f233dcee88fe0abe",
+        "testnet": "9a0766d93b6608b7"
+      }
+    }
+  },
+  "networks": {
+    "emulator": "127.0.0.1:3569",
+    "mainnet": "access.mainnet.nodes.onflow.org:9000",
+    "testnet": "access.devnet.nodes.onflow.org:9000"
+  },
+  "accounts": {
+    "emulator-account": {
+      "address": "f8d6e0586b0a20c7",
+      "key": {
+        "type": "file",
+        "location": "emulator-account.pkey"
+      }
+    },
+    "testnet-account": {
+      "address": "0x360397b746e4c184",
+      "key": {
+        "type": "file",
+        "location": "testnet-account.pkey"
+      }
+    }
+  },
+  "deployments": {
+    "emulator": {
+      "emulator-account": ["Plink"]
+    },
+    "testnet": {
+      "testnet-account": ["Plink"]
+    }
+  }
 }
