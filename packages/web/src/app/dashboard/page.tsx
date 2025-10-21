@@ -230,9 +230,10 @@ export default function Dashboard() {
       } else {
         throw new Error("Transaction failed");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error withdrawing:", err);
-      setError(err.message || "Failed to withdraw. Please try again.");
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message || "Failed to withdraw. Please try again.");
       setWithdrawingStashId(null);
     }
   };
