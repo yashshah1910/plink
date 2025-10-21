@@ -54,7 +54,7 @@ export default function CreateStash() {
       setError(null);
 
       const createStashTransaction = `
-        import Plink from 0xf8d6e0586b0a20c7
+        import Plink from 0x360397b746e4c184
 
         transaction(ownerName: String, unlockDate: UFix64) {
           prepare(signer: auth(Storage, Capabilities) &Account) {

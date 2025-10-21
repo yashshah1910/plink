@@ -42,7 +42,7 @@ export default function Dashboard() {
       setLoading(true);
 
       const getStashesScript = `
-        import Plink from 0xf8d6e0586b0a20c7
+        import Plink from 0x360397b746e4c184
 
         access(all) struct StashInfo {
           access(all) let id: UInt64

@@ -39,7 +39,7 @@ export default function PublicGiftingPage() {
       setError(null);
 
       const getStashScript = `
-        import Plink from 0xf8d6e0586b0a20c7
+        import Plink from 0x360397b746e4c184
 
         access(all) struct StashInfo {
           access(all) let id: UInt64
@@ -133,7 +133,7 @@ export default function PublicGiftingPage() {
       setError(null);
 
       const addFundsTransaction = `
-        import Plink from 0xf8d6e0586b0a20c7
+        import Plink from 0x360397b746e4c184
 
         transaction(recipientAddress: Address, stashID: UInt64, amount: UFix64) {
           prepare(signer: auth(Storage, Capabilities) &Account) {
