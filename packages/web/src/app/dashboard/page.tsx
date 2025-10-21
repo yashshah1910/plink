@@ -31,16 +31,21 @@ export default function Dashboard() {
   const [stashes, setStashes] = useState<Stash[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedStash, setSelectedStash] = useState<{ id: number; name: string } | null>(null);
-  
+  const [selectedStash, setSelectedStash] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
+
   // Share/Copy state
   const [copiedStashId, setCopiedStashId] = useState<number | null>(null);
-  
+
   // Withdrawal state
-  const [withdrawingStashId, setWithdrawingStashId] = useState<number | null>(null);
+  const [withdrawingStashId, setWithdrawingStashId] = useState<number | null>(
+    null
+  );
   const [withdrawAmount, setWithdrawAmount] = useState("");
 
   const loadStashes = useCallback(async () => {
@@ -138,24 +143,24 @@ export default function Dashboard() {
     return new Date(timestamp * 1000).toLocaleDateString();
   };
 
-const formatAmount = (amount: number | string) => {
-  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-  return num.toFixed(2);
-};
+  const formatAmount = (amount: number | string) => {
+    const num = typeof amount === "string" ? parseFloat(amount) : amount;
+    return num.toFixed(2);
+  };
 
   const handleShare = async (stashId: number) => {
     if (!user?.addr) return;
-    
+
     // Construct the shareable link
     const shareUrl = `${window.location.origin}/stash/${user.addr}/${stashId}`;
-    
+
     try {
       // Copy to clipboard
       await navigator.clipboard.writeText(shareUrl);
-      
+
       // Show success feedback
       setCopiedStashId(stashId);
-      
+
       // Reset after 2 seconds
       setTimeout(() => {
         setCopiedStashId(null);
@@ -204,18 +209,19 @@ const formatAmount = (amount: number | string) => {
 
       const transactionId = await fcl.mutate({
         cadence: withdrawTransaction,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         args: (arg: any, t: any) => [
           arg(stashId.toString(), t.UInt64),
-          arg(parseFloat(withdrawAmount).toFixed(2), t.UFix64)
+          arg(parseFloat(withdrawAmount).toFixed(2), t.UFix64),
         ],
         proposer: fcl.currentUser,
         payer: fcl.currentUser,
         authorizations: [fcl.currentUser],
-        limit: 1000
+        limit: 1000,
       });
 
       const result = await fcl.tx(transactionId).onceSealed();
-      
+
       if (result.status === 4) {
         // Success - reload stashes
         await loadStashes();
@@ -236,21 +242,48 @@ const formatAmount = (amount: number | string) => {
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 relative overflow-hidden">
         {/* Background decoration */}
         <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,#fff,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.5))]" />
-        
+
         <div className="relative flex items-center justify-center min-h-screen">
           <div className="text-center space-y-6 animate-fade-in-up">
             <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center animate-float">
-              <svg className="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              <svg
+                className="w-12 h-12 text-primary"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
               </svg>
             </div>
-            <h1 className="text-4xl font-bold text-foreground">Connect Your Wallet</h1>
+            <h1 className="text-4xl font-bold text-foreground">
+              Connect Your Wallet
+            </h1>
             <p className="text-lg text-secondary max-w-md mx-auto">
-              Please connect your Flow wallet to access your dashboard and manage your Stashes
+              Please connect your Flow wallet to access your dashboard and
+              manage your Stashes
             </p>
-            <Button onClick={logIn} size="lg" className="shadow-lg hover:shadow-xl transition-all duration-300">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            <Button
+              onClick={logIn}
+              size="lg"
+              className="shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
               </svg>
               Connect Wallet
             </Button>
@@ -264,73 +297,60 @@ const formatAmount = (amount: number | string) => {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,#fff,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.5))]" />
-      
+
       {/* Header */}
       <Header />
-      
+
       <div className="relative">
         {/* Main Content */}
         <div className="container mx-auto px-4 py-12 max-w-7xl">
           {/* Header Section */}
           <div className="text-center mb-16 animate-fade-in-up">
             <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium border border-primary/20 mb-6 animate-float">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                />
               </svg>
               <span>Connected as {formatAddress(user?.addr || "")}</span>
             </div>
             <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
-              Your Digital{' '}
+              Your Digital{" "}
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 Stashes
               </span>
             </h1>
             <p className="text-lg text-secondary max-w-2xl mx-auto mb-8">
-              Manage your time-locked savings accounts and watch your children&apos;s future grow
+              Manage your time-locked savings accounts and watch your
+              children&apos;s future grow
             </p>
           </div>
 
-        {/* Loading State */}
-        {loading && (
-          <div className="flex justify-center items-center py-20">
-            <div className="relative">
-              <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-              <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-primary/60 rounded-full animate-spin animation-delay-150"></div>
-            </div>
-          </div>
-        )}
-
-        {/* Error State */}
-        {error && (
-          <div className="max-w-md mx-auto">
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl p-8 text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+          {/* Loading State */}
+          {loading && (
+            <div className="flex justify-center items-center py-20">
+              <div className="relative">
+                <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-primary/60 rounded-full animate-spin animation-delay-150"></div>
               </div>
-              <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
-                Oops! Something went wrong
-              </h3>
-              <p className="text-red-600 dark:text-red-300 mb-6">{error}</p>
-              <Button onClick={loadStashes} variant="outline" className="shadow-sm">
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Try Again
-              </Button>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Stashes Content */}
-        {!loading && !error && (
-          <div className="animate-fade-in-up">
-            {stashes.length === 0 ? (
-              <div className="text-center py-20">
-                <div className="w-32 h-32 mx-auto mb-8 rounded-full bg-primary/10 flex items-center justify-center animate-float">
+          {/* Error State */}
+          {error && (
+            <div className="max-w-md mx-auto">
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl p-8 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
                   <svg
-                    className="w-16 h-16 text-primary"
+                    className="w-8 h-8 text-red-600 dark:text-red-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -338,223 +358,378 @@ const formatAmount = (amount: number | string) => {
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                      strokeWidth={2}
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-bold text-foreground mb-4">No Stashes Yet</h3>
-                <p className="text-secondary text-lg mb-8 max-w-md mx-auto">
-                  Create your first digital piggy bank to start saving for your
-                  child&apos;s future. Build memories and secure their tomorrow.
-                </p>
-                <Link href="/dashboard/create">
-                  <Button size="lg" className="shadow-lg hover:shadow-xl transition-all duration-300 group">
-                    <svg className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    Create Your First Stash
-                  </Button>
-                </Link>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {stashes.map((stash, index) => (
-                  <div
-                    key={stash.id}
-                    className={`bg-background/80 backdrop-blur-sm border border-border/50 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 group card-slide-in delay-${Math.min(index * 100, 500)} relative`}
+                <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+                  Oops! Something went wrong
+                </h3>
+                <p className="text-red-600 dark:text-red-300 mb-6">{error}</p>
+                <Button
+                  onClick={loadStashes}
+                  variant="outline"
+                  className="shadow-sm"
+                >
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    {/* Gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    
-                    {/* Stash Header */}
-                    <div className="relative bg-gradient-to-r from-primary to-accent p-6 text-primary-foreground">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-bold text-xl mb-1">
-                            {stash.ownerName}&apos;s Stash
-                          </h3>
-                          <p className="text-primary-foreground/80 text-sm">
-                            Unlocks on {formatDate(stash.unlockDate)}
-                          </p>
-                        </div>
-                        <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Content */}
-                    <div className="relative p-6 space-y-6">
-                      {/* Balance Display */}
-                      <div className="text-center">
-                        <p className="text-sm text-secondary mb-2">Current Balance</p>
-                        <div className="text-3xl font-bold text-primary hover:scale-105 transition-transform cursor-default">
-                          {formatAmount(stash.balance)} 
-                          <span className="text-lg font-medium text-secondary ml-1">FLOW</span>
-                        </div>
-                      </div>
-
-                      {/* Status Badge */}
-                      <div className="flex justify-center">
-                        <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium ${
-                          stash.isLocked 
-                            ? 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-700' 
-                            : 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-700'
-                        }`}>
-                          <div className={`w-2 h-2 rounded-full ${stash.isLocked ? 'bg-red-500' : 'bg-green-500'}`} />
-                          <span>{stash.isLocked ? 'Locked' : 'Unlocked'}</span>
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="space-y-3">
-                        {/* Share Button */}
-                        <Button
-                          variant={copiedStashId === stash.id ? "primary" : "outline"}
-                          size="sm"
-                          className="w-full button-hover-lift group border-2 hover:border-primary transition-all"
-                          onClick={() => handleShare(stash.id)}
-                        >
-                          <div className="flex items-center justify-center space-x-2">
-                            {copiedStashId === stash.id ? (
-                              <>
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                                <span>Link Copied!</span>
-                              </>
-                            ) : (
-                              <>
-                                <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                                </svg>
-                                <span>Share Link</span>
-                              </>
-                            )}
-                          </div>
-                        </Button>
-                        
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full button-hover-lift group border-2 hover:border-primary"
-                          onClick={() => {
-                            setSelectedStash({ id: stash.id, name: stash.ownerName });
-                            setIsModalOpen(true);
-                          }}
-                        >
-                          <div className="flex items-center justify-center space-x-2">
-                            <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                            <span>Add Funds</span>
-                          </div>
-                        </Button>
-                        {!stash.isLocked && (
-                          <div className="space-y-2">
-                            {withdrawingStashId === stash.id ? (
-                              <div className="space-y-2">
-                                <input
-                                  type="number"
-                                  step="0.01"
-                                  min="0"
-                                  max={stash.balance}
-                                  placeholder="Amount to withdraw"
-                                  value={withdrawAmount}
-                                  onChange={(e) => setWithdrawAmount(e.target.value)}
-                                  className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground"
-                                />
-                                <div className="flex space-x-2">
-                                  <Button
-                                    variant="secondary"
-                                    size="sm"
-                                    className="flex-1"
-                                    onClick={() => handleWithdraw(stash.id)}
-                                  >
-                                    Confirm
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="flex-1"
-                                    onClick={() => {
-                                      setWithdrawingStashId(null);
-                                      setWithdrawAmount("");
-                                    }}
-                                  >
-                                    Cancel
-                                  </Button>
-                                </div>
-                              </div>
-                            ) : (
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                className="w-full button-hover-lift group"
-                                onClick={() => setWithdrawingStashId(stash.id)}
-                              >
-                                <div className="flex items-center justify-center space-x-2">
-                                  <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                  </svg>
-                                  <span>Withdraw</span>
-                                </div>
-                              </Button>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Deposit History */}
-                        {stash.depositHistory && stash.depositHistory.length > 0 && (
-                          <details className="mt-4 border-t border-border pt-4">
-                            <summary className="cursor-pointer text-sm font-semibold text-secondary hover:text-foreground transition-colors flex items-center justify-between">
-                              <span>📜 Gift History ({stash.depositHistory.length})</span>
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                              </svg>
-                            </summary>
-                            <div className="mt-3 space-y-2 max-h-60 overflow-y-auto">
-                              {stash.depositHistory.map((record, idx) => (
-                                <div key={idx} className="bg-muted/50 rounded-lg p-3 text-sm">
-                                  <div className="flex justify-between items-start mb-1">
-                                    <span className="font-semibold text-primary">
-                                      {formatAmount(record.amount)} FLOW
-                                    </span>
-                                    <span className="text-xs text-secondary">
-                                      {formatDate(record.timestamp)}
-                                    </span>
-                                  </div>
-                                  {record.from && (
-                                    <div className="text-xs text-secondary mb-1">
-                                      From: {formatAddress(record.from)}
-                                    </div>
-                                  )}
-                                  {record.message && (
-                                    <div className="text-xs text-foreground italic mt-2 p-2 bg-background/50 rounded border-l-2 border-accent">
-                                      &ldquo;{record.message}&rdquo;
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </details>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                  Try Again
+                </Button>
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+
+          {/* Stashes Content */}
+          {!loading && !error && (
+            <div className="animate-fade-in-up">
+              {stashes.length === 0 ? (
+                <div className="text-center py-20">
+                  <div className="w-32 h-32 mx-auto mb-8 rounded-full bg-primary/10 flex items-center justify-center animate-float">
+                    <svg
+                      className="w-16 h-16 text-primary"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold text-foreground mb-4">
+                    No Stashes Yet
+                  </h3>
+                  <p className="text-secondary text-lg mb-8 max-w-md mx-auto">
+                    Create your first digital piggy bank to start saving for
+                    your child&apos;s future. Build memories and secure their
+                    tomorrow.
+                  </p>
+                  <Link href="/dashboard/create">
+                    <Button
+                      size="lg"
+                      className="shadow-lg hover:shadow-xl transition-all duration-300 group"
+                    >
+                      <svg
+                        className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                        />
+                      </svg>
+                      Create Your First Stash
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {stashes.map((stash, index) => (
+                    <div
+                      key={stash.id}
+                      className={`bg-background/80 backdrop-blur-sm border border-border/50 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 group card-slide-in delay-${Math.min(
+                        index * 100,
+                        500
+                      )} relative`}
+                    >
+                      {/* Gradient overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                      {/* Stash Header */}
+                      <div className="relative bg-gradient-to-r from-primary to-accent p-6 text-primary-foreground">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="font-bold text-xl mb-1">
+                              {stash.ownerName}&apos;s Stash
+                            </h3>
+                            <p className="text-primary-foreground/80 text-sm">
+                              Unlocks on {formatDate(stash.unlockDate)}
+                            </p>
+                          </div>
+                          <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                            <svg
+                              className="w-6 h-6"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="relative p-6 space-y-6">
+                        {/* Balance Display */}
+                        <div className="text-center">
+                          <p className="text-sm text-secondary mb-2">
+                            Current Balance
+                          </p>
+                          <div className="text-3xl font-bold text-primary hover:scale-105 transition-transform cursor-default">
+                            {formatAmount(stash.balance)}
+                            <span className="text-lg font-medium text-secondary ml-1">
+                              FLOW
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Status Badge */}
+                        <div className="flex justify-center">
+                          <div
+                            className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium ${
+                              stash.isLocked
+                                ? "bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-700"
+                                : "bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-700"
+                            }`}
+                          >
+                            <div
+                              className={`w-2 h-2 rounded-full ${
+                                stash.isLocked ? "bg-red-500" : "bg-green-500"
+                              }`}
+                            />
+                            <span>
+                              {stash.isLocked ? "Locked" : "Unlocked"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="space-y-3">
+                          {/* Share Button */}
+                          <Button
+                            variant={
+                              copiedStashId === stash.id ? "primary" : "outline"
+                            }
+                            size="sm"
+                            className="w-full button-hover-lift group border-2 hover:border-primary transition-all"
+                            onClick={() => handleShare(stash.id)}
+                          >
+                            <div className="flex items-center justify-center space-x-2">
+                              {copiedStashId === stash.id ? (
+                                <>
+                                  <svg
+                                    className="w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M5 13l4 4L19 7"
+                                    />
+                                  </svg>
+                                  <span>Link Copied!</span>
+                                </>
+                              ) : (
+                                <>
+                                  <svg
+                                    className="w-4 h-4 group-hover:scale-110 transition-transform"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                                    />
+                                  </svg>
+                                  <span>Share Link</span>
+                                </>
+                              )}
+                            </div>
+                          </Button>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full button-hover-lift group border-2 hover:border-primary"
+                            onClick={() => {
+                              setSelectedStash({
+                                id: stash.id,
+                                name: stash.ownerName,
+                              });
+                              setIsModalOpen(true);
+                            }}
+                          >
+                            <div className="flex items-center justify-center space-x-2">
+                              <svg
+                                className="w-4 h-4 group-hover:scale-110 transition-transform"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                />
+                              </svg>
+                              <span>Add Funds</span>
+                            </div>
+                          </Button>
+                          {!stash.isLocked && (
+                            <div className="space-y-2">
+                              {withdrawingStashId === stash.id ? (
+                                <div className="space-y-2">
+                                  <input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    max={stash.balance}
+                                    placeholder="Amount to withdraw"
+                                    value={withdrawAmount}
+                                    onChange={(e) =>
+                                      setWithdrawAmount(e.target.value)
+                                    }
+                                    className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground"
+                                  />
+                                  <div className="flex space-x-2">
+                                    <Button
+                                      variant="secondary"
+                                      size="sm"
+                                      className="flex-1"
+                                      onClick={() => handleWithdraw(stash.id)}
+                                    >
+                                      Confirm
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="flex-1"
+                                      onClick={() => {
+                                        setWithdrawingStashId(null);
+                                        setWithdrawAmount("");
+                                      }}
+                                    >
+                                      Cancel
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  className="w-full button-hover-lift group"
+                                  onClick={() =>
+                                    setWithdrawingStashId(stash.id)
+                                  }
+                                >
+                                  <div className="flex items-center justify-center space-x-2">
+                                    <svg
+                                      className="w-4 h-4 group-hover:scale-110 transition-transform"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                      />
+                                    </svg>
+                                    <span>Withdraw</span>
+                                  </div>
+                                </Button>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Deposit History */}
+                          {stash.depositHistory &&
+                            stash.depositHistory.length > 0 && (
+                              <details className="mt-4 border-t border-border pt-4">
+                                <summary className="cursor-pointer text-sm font-semibold text-secondary hover:text-foreground transition-colors flex items-center justify-between">
+                                  <span>
+                                    📜 Gift History (
+                                    {stash.depositHistory.length})
+                                  </span>
+                                  <svg
+                                    className="w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M19 9l-7 7-7-7"
+                                    />
+                                  </svg>
+                                </summary>
+                                <div className="mt-3 space-y-2 max-h-60 overflow-y-auto">
+                                  {stash.depositHistory.map((record, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="bg-muted/50 rounded-lg p-3 text-sm"
+                                    >
+                                      <div className="flex justify-between items-start mb-1">
+                                        <span className="font-semibold text-primary">
+                                          {formatAmount(record.amount)} FLOW
+                                        </span>
+                                        <span className="text-xs text-secondary">
+                                          {formatDate(record.timestamp)}
+                                        </span>
+                                      </div>
+                                      {record.from && (
+                                        <div className="text-xs text-secondary mb-1">
+                                          From: {formatAddress(record.from)}
+                                        </div>
+                                      )}
+                                      {record.message && (
+                                        <div className="text-xs text-foreground italic mt-2 p-2 bg-background/50 rounded border-l-2 border-accent">
+                                          &ldquo;{record.message}&rdquo;
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </details>
+                            )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
-        
+
         {/* Footer */}
         <Footer />
-        
+
         {/* Add Funds Modal */}
         <AddFundsModal
           isOpen={isModalOpen}
@@ -563,7 +738,7 @@ const formatAmount = (amount: number | string) => {
             setSelectedStash(null);
           }}
           stashId={selectedStash?.id || 0}
-          stashName={selectedStash?.name || ''}
+          stashName={selectedStash?.name || ""}
           onSuccess={() => {
             loadStashes(); // Refresh the stashes list
           }}
