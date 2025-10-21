@@ -54,7 +54,7 @@ export default function Dashboard() {
       setLoading(true);
 
       const getStashesScript = `
-        import Plink from 0x360397b746e4c184
+        import Plink from 0x35ac5d420c563f8e
 
         access(all) struct StashInfo {
           access(all) let id: UInt64
@@ -178,7 +178,7 @@ const formatAmount = (amount: number | string) => {
       setError(null);
 
       const withdrawTransaction = `
-        import Plink from 0x360397b746e4c184
+        import Plink from 0x35ac5d420c563f8e
         import FungibleToken from 0x9a0766d93b6608b7
         import FlowToken from 0x7e60df042a9c0868
 

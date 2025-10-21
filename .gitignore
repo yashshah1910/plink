@@ -1,2 +1,3 @@
 packages/web/pnpm-lock.yaml
 packages/contract/testnet-account.pkey
+packages/contract/testnet-account-new.pkey

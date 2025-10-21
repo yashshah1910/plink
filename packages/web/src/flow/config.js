@@ -18,6 +18,6 @@ config({
   "app.detail.icon": "https://placekitten.com/g/200/200",
 
   // Contract aliases for testnet
-  "0xPlink": process.env.NEXT_PUBLIC_CONTRACT_PLINK || "0x360397b746e4c184",
+  "0xPlink": process.env.NEXT_PUBLIC_CONTRACT_PLINK || "0x35ac5d420c563f8e",
   "0xFungibleToken": "0x9a0766d93b6608b7",
 });

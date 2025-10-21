@@ -40,11 +40,18 @@
         "location": "emulator-account.pkey"
       }
     },
-    "testnet-account": {
+    "testnet-account-old": {
       "address": "0x360397b746e4c184",
       "key": {
         "type": "file",
         "location": "testnet-account.pkey"
+      }
+    },
+    "testnet-account": {
+      "address": "0x35ac5d420c563f8e",
+      "key": {
+        "type": "file",
+        "location": "testnet-account-new.pkey"
       }
     }
   },
