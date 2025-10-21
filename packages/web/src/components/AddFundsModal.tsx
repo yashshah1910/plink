@@ -22,6 +22,7 @@ export default function AddFundsModal({
 }: AddFundsModalProps) {
   const { user } = useUser();
   const [amount, setAmount] = useState('');
+  const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -30,6 +31,7 @@ export default function AddFundsModal({
   useEffect(() => {
     if (isOpen) {
       setAmount('');
+      setMessage('');
       setError(null);
       setSuccess(false);
     }
@@ -66,9 +68,12 @@ export default function AddFundsModal({
 
       const addFundsTransaction = `
         import Plink from 0x360397b746e4c184
+        import FungibleToken from 0x9a0766d93b6608b7
+        import FlowToken from 0x7e60df042a9c0868
 
-        transaction(recipientAddress: Address, stashID: UInt64, amount: UFix64) {
-          prepare(signer: auth(Storage, Capabilities) &Account) {
+        transaction(recipientAddress: Address, stashID: UInt64, amount: UFix64, message: String) {
+          prepare(signer: auth(Storage, BorrowValue) &Account) {
+            // Get recipient's collection
             let collectionRef = getAccount(recipientAddress)
               .capabilities.borrow<&{Plink.CollectionPublic}>(Plink.CollectionPublicPath)
               ?? panic("Could not borrow recipient's Collection")
@@ -76,9 +81,17 @@ export default function AddFundsModal({
             let stashRef = collectionRef.borrowStash(id: stashID)
               ?? panic("Could not borrow Stash in Collection")
             
-            stashRef.deposit(amount: amount)
+            // Withdraw FLOW from signer's vault
+            let vaultRef = signer.storage.borrow<auth(FungibleToken.Withdraw) &FlowToken.Vault>(
+              from: /storage/flowTokenVault
+            ) ?? panic("Could not borrow FlowToken vault")
 
-            log("✅ Successfully deposited funds.")
+            let sentVault <- vaultRef.withdraw(amount: amount) as! @FlowToken.Vault
+            
+            // Deposit into stash with sender address and message
+            stashRef.deposit(from: <-sentVault, sender: signer.address, message: message)
+
+            log("✅ Successfully deposited funds with message.")
           }
         }
       `;
@@ -89,7 +102,8 @@ export default function AddFundsModal({
         args: (arg: any, t: any) => [
           arg(user.addr, t.Address),
           arg(stashId.toString(), t.UInt64),
-          arg(parseFloat(amount).toFixed(2), t.UFix64)
+          arg(parseFloat(amount).toFixed(2), t.UFix64),
+          arg(message || "No message", t.String)
         ],
         proposer: fcl.currentUser,
         payer: fcl.currentUser,
@@ -215,6 +229,26 @@ export default function AddFundsModal({
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
                     Minimum amount: 0.01 FLOW
+                  </p>
+                </div>
+
+                {/* Message Input */}
+                <div>
+                  <label htmlFor="message" className="block text-sm font-medium mb-2">
+                    Gift Message (Optional)
+                  </label>
+                  <textarea
+                    id="message"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="Add a personal message to your gift..."
+                    rows={3}
+                    maxLength={200}
+                    className="w-full px-4 py-3 border border-border rounded-xl bg-muted/50 focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 resize-none"
+                    disabled={isLoading}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {message.length}/200 characters
                   </p>
                 </div>
 

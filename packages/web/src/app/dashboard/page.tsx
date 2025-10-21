@@ -10,12 +10,20 @@ import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import * as fcl from "@onflow/fcl";
 
+interface DepositRecord {
+  amount: number;
+  timestamp: number;
+  from: string | null;
+  message: string;
+}
+
 interface Stash {
   id: number;
   ownerName: string;
   unlockDate: number;
   balance: number;
   isLocked: boolean;
+  depositHistory: DepositRecord[];
 }
 
 export default function Dashboard() {
@@ -30,6 +38,10 @@ export default function Dashboard() {
   
   // Share/Copy state
   const [copiedStashId, setCopiedStashId] = useState<number | null>(null);
+  
+  // Withdrawal state
+  const [withdrawingStashId, setWithdrawingStashId] = useState<number | null>(null);
+  const [withdrawAmount, setWithdrawAmount] = useState("");
 
   const loadStashes = useCallback(async () => {
     if (!user?.addr) {
@@ -50,13 +62,15 @@ export default function Dashboard() {
           access(all) let unlockDate: UFix64
           access(all) let balance: UFix64
           access(all) let isLocked: Bool
+          access(all) let depositHistory: [Plink.DepositRecord]
 
-          init(id: UInt64, ownerName: String, unlockDate: UFix64, balance: UFix64, isLocked: Bool) {
+          init(id: UInt64, ownerName: String, unlockDate: UFix64, balance: UFix64, isLocked: Bool, depositHistory: [Plink.DepositRecord]) {
             self.id = id
             self.ownerName = ownerName
             self.unlockDate = unlockDate
             self.balance = balance
             self.isLocked = isLocked
+            self.depositHistory = depositHistory
           }
         }
 
@@ -81,7 +95,8 @@ export default function Dashboard() {
                 ownerName: stashRef.ownerName,
                 unlockDate: stashRef.unlockDate,
                 balance: stashRef.getBalance(),
-                isLocked: isLocked
+                isLocked: isLocked,
+                depositHistory: stashRef.getDepositHistory()
               ))
             }
           }
@@ -149,6 +164,70 @@ const formatAmount = (amount: number | string) => {
       console.error("Failed to copy link:", err);
       // Fallback: show alert with the link
       alert(`Share this link:\n${shareUrl}`);
+    }
+  };
+
+  const handleWithdraw = async (stashId: number) => {
+    if (!withdrawAmount || parseFloat(withdrawAmount) <= 0) {
+      setError("Please enter a valid withdrawal amount");
+      return;
+    }
+
+    try {
+      setWithdrawingStashId(stashId);
+      setError(null);
+
+      const withdrawTransaction = `
+        import Plink from 0x360397b746e4c184
+        import FungibleToken from 0x9a0766d93b6608b7
+        import FlowToken from 0x7e60df042a9c0868
+
+        transaction(stashId: UInt64, amount: UFix64) {
+          prepare(signer: auth(Storage, BorrowValue) &Account) {
+            let collectionRef = signer.storage.borrow<&Plink.Collection>(
+              from: Plink.CollectionStoragePath
+            ) ?? panic("Could not borrow Collection")
+
+            let stashRef = collectionRef.borrowStash(id: stashId)
+              ?? panic("Could not borrow Stash")
+
+            let withdrawnVault <- stashRef.withdraw(amount: amount) as! @FlowToken.Vault
+
+            let receiverRef = signer.storage.borrow<&FlowToken.Vault>(
+              from: /storage/flowTokenVault
+            ) ?? panic("Could not borrow FlowToken vault")
+
+            receiverRef.deposit(from: <-withdrawnVault)
+          }
+        }
+      `;
+
+      const transactionId = await fcl.mutate({
+        cadence: withdrawTransaction,
+        args: (arg: any, t: any) => [
+          arg(stashId.toString(), t.UInt64),
+          arg(parseFloat(withdrawAmount).toFixed(2), t.UFix64)
+        ],
+        proposer: fcl.currentUser,
+        payer: fcl.currentUser,
+        authorizations: [fcl.currentUser],
+        limit: 1000
+      });
+
+      const result = await fcl.tx(transactionId).onceSealed();
+      
+      if (result.status === 4) {
+        // Success - reload stashes
+        await loadStashes();
+        setWithdrawAmount("");
+        setWithdrawingStashId(null);
+      } else {
+        throw new Error("Transaction failed");
+      }
+    } catch (err: any) {
+      console.error("Error withdrawing:", err);
+      setError(err.message || "Failed to withdraw. Please try again.");
+      setWithdrawingStashId(null);
     }
   };
 
@@ -375,22 +454,93 @@ const formatAmount = (amount: number | string) => {
                           </div>
                         </Button>
                         {!stash.isLocked && (
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            className="w-full button-hover-lift group"
-                            onClick={() => {
-                              // TODO: Implement withdraw functionality
-                              console.log("Withdraw from stash:", stash.id);
-                            }}
-                          >
-                            <div className="flex items-center justify-center space-x-2">
-                              <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <div className="space-y-2">
+                            {withdrawingStashId === stash.id ? (
+                              <div className="space-y-2">
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  max={stash.balance}
+                                  placeholder="Amount to withdraw"
+                                  value={withdrawAmount}
+                                  onChange={(e) => setWithdrawAmount(e.target.value)}
+                                  className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground"
+                                />
+                                <div className="flex space-x-2">
+                                  <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    className="flex-1"
+                                    onClick={() => handleWithdraw(stash.id)}
+                                  >
+                                    Confirm
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1"
+                                    onClick={() => {
+                                      setWithdrawingStashId(null);
+                                      setWithdrawAmount("");
+                                    }}
+                                  >
+                                    Cancel
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                className="w-full button-hover-lift group"
+                                onClick={() => setWithdrawingStashId(stash.id)}
+                              >
+                                <div className="flex items-center justify-center space-x-2">
+                                  <svg className="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                  <span>Withdraw</span>
+                                </div>
+                              </Button>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Deposit History */}
+                        {stash.depositHistory && stash.depositHistory.length > 0 && (
+                          <details className="mt-4 border-t border-border pt-4">
+                            <summary className="cursor-pointer text-sm font-semibold text-secondary hover:text-foreground transition-colors flex items-center justify-between">
+                              <span>📜 Gift History ({stash.depositHistory.length})</span>
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                               </svg>
-                              <span>Withdraw</span>
+                            </summary>
+                            <div className="mt-3 space-y-2 max-h-60 overflow-y-auto">
+                              {stash.depositHistory.map((record, idx) => (
+                                <div key={idx} className="bg-muted/50 rounded-lg p-3 text-sm">
+                                  <div className="flex justify-between items-start mb-1">
+                                    <span className="font-semibold text-primary">
+                                      {formatAmount(record.amount)} FLOW
+                                    </span>
+                                    <span className="text-xs text-secondary">
+                                      {formatDate(record.timestamp)}
+                                    </span>
+                                  </div>
+                                  {record.from && (
+                                    <div className="text-xs text-secondary mb-1">
+                                      From: {formatAddress(record.from)}
+                                    </div>
+                                  )}
+                                  {record.message && (
+                                    <div className="text-xs text-foreground italic mt-2 p-2 bg-background/50 rounded border-l-2 border-accent">
+                                      &ldquo;{record.message}&rdquo;
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
                             </div>
-                          </Button>
+                          </details>
                         )}
                       </div>
                     </div>

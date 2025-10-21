@@ -16,6 +16,15 @@
         "mainnet": "f233dcee88fe0abe",
         "testnet": "9a0766d93b6608b7"
       }
+    },
+    "FlowToken": {
+      "source": "testnet://7e60df042a9c0868.FlowToken",
+      "hash": "cefb25fd19d9fc80ce1b1fc7f8c495f956cc2f1c65a896a1e14c33b78f7d1e4b",
+      "aliases": {
+        "emulator": "0ae53cb6e3f42a79",
+        "mainnet": "1654653399040a61",
+        "testnet": "7e60df042a9c0868"
+      }
     }
   },
   "networks": {

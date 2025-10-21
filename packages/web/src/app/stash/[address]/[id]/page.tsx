@@ -134,9 +134,12 @@ export default function PublicGiftingPage() {
 
       const addFundsTransaction = `
         import Plink from 0x360397b746e4c184
+        import FungibleToken from 0x9a0766d93b6608b7
+        import FlowToken from 0x7e60df042a9c0868
 
-        transaction(recipientAddress: Address, stashID: UInt64, amount: UFix64) {
-          prepare(signer: auth(Storage, Capabilities) &Account) {
+        transaction(recipientAddress: Address, stashID: UInt64, amount: UFix64, message: String) {
+          prepare(signer: auth(Storage, BorrowValue) &Account) {
+            // Get recipient's collection
             let collectionRef = getAccount(recipientAddress)
               .capabilities.borrow<&{Plink.CollectionPublic}>(Plink.CollectionPublicPath)
               ?? panic("Could not borrow recipient's Collection")
@@ -144,9 +147,17 @@ export default function PublicGiftingPage() {
             let stashRef = collectionRef.borrowStash(id: stashID)
               ?? panic("Could not borrow Stash in Collection")
             
-            stashRef.deposit(amount: amount)
+            // Withdraw FLOW from signer's vault
+            let vaultRef = signer.storage.borrow<auth(FungibleToken.Withdraw) &FlowToken.Vault>(
+              from: /storage/flowTokenVault
+            ) ?? panic("Could not borrow FlowToken vault")
 
-            log("✅ Successfully deposited funds as gift.")
+            let sentVault <- vaultRef.withdraw(amount: amount) as! @FlowToken.Vault
+            
+            // Deposit into stash with sender address and message
+            stashRef.deposit(from: <-sentVault, sender: signer.address, message: message)
+
+            log("✅ Successfully deposited funds as gift with message.")
           }
         }
       `;
@@ -157,7 +168,8 @@ export default function PublicGiftingPage() {
         args: (arg: any, t: any) => [
           arg(recipientAddress, t.Address),
           arg(stashId, t.UInt64),
-          arg(giftAmount.toFixed(2), t.UFix64)
+          arg(giftAmount.toFixed(2), t.UFix64),
+          arg(message || "No message", t.String)
         ],
         proposer: fcl.currentUser,
         payer: fcl.currentUser,
