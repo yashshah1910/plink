@@ -1,3 +1,6 @@
+import Image from 'next/image';
+import FlowLogo from '@/assets/images/FlowLogo.webp';
+
 export function TrustSecuritySection() {
   return (
     <section className="py-24 bg-muted/30">
@@ -88,31 +91,37 @@ export function TrustSecuritySection() {
               </p>
             </div>
 
-            {/* Powered by USDC */}
+            {/* Powered by Flow Tokens */}
             <div className="bg-background rounded-2xl p-8 border border-border/50">
-              <h3 className="font-semibold text-foreground mb-4">Powered by USDC</h3>
+              <h3 className="font-semibold text-foreground mb-4">Powered by $FLOW</h3>
               <div className="flex items-center space-x-4 mb-4">
                 <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center">
-                  <span className="text-accent font-bold text-lg">$</span>
+                  <Image
+                    src={FlowLogo}
+                    alt="Flow Logo"
+                    width={40}
+                    height={40}
+                    className="object-contain"
+                  />
                 </div>
                 <div>
-                  <div className="font-medium text-foreground">USD Coin</div>
-                  <div className="text-sm text-secondary">1:1 backed by US dollars</div>
+                  <div className="font-medium text-foreground">Flow Token</div>
+                  <div className="text-sm text-secondary">Native currency of Flow</div>
                 </div>
               </div>
               <p className="text-secondary text-sm">
-                USDC provides the stability of traditional savings with the benefits of blockchain technology. 
-                Your gifts maintain their value over time.
+                $FLOW is the native cryptocurrency of the Flow blockchain, providing fast and secure transactions. 
+                <span className="text-muted-foreground"> (USDC support coming soon!)</span>
               </p>
             </div>
 
             {/* Security badge */}
             <div className="text-center">
-              <div className="inline-flex items-center space-x-2 bg-accent/10 text-accent px-4 py-2 rounded-full text-sm font-medium border border-accent/20">
+                <div className="inline-flex items-center space-x-2 bg-accent/10 text-accent px-4 py-2 rounded-full text-sm font-medium border border-accent/20">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span>Smart contracts audited</span>
+                <span>Security-first smart contracts</span>
               </div>
             </div>
           </div>

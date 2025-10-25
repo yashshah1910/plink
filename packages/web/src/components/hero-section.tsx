@@ -28,8 +28,9 @@ export function HeroSection() {
                 </span>
               </h1>
               <p className="text-lg sm:text-xl text-secondary leading-relaxed max-w-2xl">
-                Create a time-locked Stash for your child, receive USDC gifts from family, 
-                and build a permanent memory book of generosity on the Flow blockchain.
+                Create a time-locked Stash for your child, receive $FLOW gifts from family, 
+                and build a permanent memory book of generosity on the Flow blockchain.{' '}
+                <span className="text-sm text-muted-foreground">(USDC support coming soon!)</span>
               </p>
             </div>
 

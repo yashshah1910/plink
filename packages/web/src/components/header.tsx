@@ -21,13 +21,21 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4 mx-auto max-w-7xl">
-        {/* Logo */}
-        <Link
-          href="/"
-          className="flex items-center space-x-2 bg-slate-50 p-1 rounded-lg hover:bg-slate-100 transition-colors"
-        >
-          <Image src={PlinkLogo} alt="Plink Logo" width={48} height={48} />
-        </Link>
+        {/* Logo with Testnet Badge */}
+        <div className="flex items-center gap-3">
+          <Link
+            href="/"
+            className="flex items-center space-x-2 bg-slate-50 p-1 rounded-lg hover:bg-slate-100 transition-colors"
+          >
+            <Image src={PlinkLogo} alt="Plink Logo" width={48} height={48} />
+          </Link>
+          
+          {/* Testnet Indicator Badge */}
+          <div className="hidden sm:flex items-center gap-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-md border border-amber-300 dark:border-amber-700">
+            <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
+            <span className="text-xs font-medium">Testnet</span>
+          </div>
+        </div>
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center space-x-4">
@@ -112,6 +120,12 @@ export function Header() {
       {isMobileMenuOpen && (
         <div className="md:hidden border-t border-border/40 bg-background/95 backdrop-blur">
           <div className="container px-4 py-4 space-y-4">
+            {/* Testnet Indicator for Mobile */}
+            <div className="flex items-center justify-center gap-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-md border border-amber-300 dark:border-amber-700 w-fit mx-auto sm:hidden">
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
+              <span className="text-xs font-medium">Running on Testnet</span>
+            </div>
+            
             {loading ? (
               <div className="w-full h-8 bg-muted animate-pulse rounded"></div>
             ) : isLoggedIn ? (

@@ -22,9 +22,9 @@ export function FeaturesSection() {
     },
     {
       icon: SparklesIcon,
-      title: 'USDC Stability',
-      description: 'All contributions are made in USDC, protecting your child\'s fund from crypto volatility while still leveraging blockchain benefits.',
-      highlight: 'Stable value',
+      title: '$FLOW Tokens',
+      description: 'All contributions are currently made in $FLOW, the native token of the Flow blockchain. Build your child\'s fund with Flow\'s secure and fast network.',
+      highlight: 'USDC coming soon',
     },
   ];
 

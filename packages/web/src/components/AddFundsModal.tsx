@@ -127,7 +127,28 @@ export default function AddFundsModal({
     } catch (err: unknown) {
       console.error('Error adding funds:', err);
       const message = err instanceof Error ? err.message : String(err);
-      setError(message || 'Failed to add funds. Please try again.');
+      
+      // Parse error message for user-friendly errors
+      let userFriendlyError = 'Failed to add funds. Please try again.';
+      
+      if (message.includes('insufficient balance') || message.includes('Amount withdrawn must be less than or equal')) {
+        userFriendlyError = `Insufficient balance. You need at least ${amount} FLOW plus transaction fees (~0.001 FLOW) in your wallet.`;
+      } else if (message.includes('Could not borrow')) {
+        userFriendlyError = 'Unable to access your wallet. Please ensure your wallet is properly connected.';
+      } else if (message.includes('panic') || message.includes('Could not borrow recipient')) {
+        userFriendlyError = 'Unable to find the recipient\'s stash. The stash may have been deleted.';
+      } else if (message.includes('User rejected') || message.includes('declined') || message.includes('cancelled')) {
+        userFriendlyError = 'Transaction was cancelled. No funds were transferred.';
+      } else if (message.includes('timeout') || message.includes('timed out')) {
+        userFriendlyError = 'Transaction timed out. Please check your connection and try again.';
+      } else if (message.toLowerCase().includes('network')) {
+        userFriendlyError = 'Network error. Please check your connection and try again.';
+      } else if (message) {
+        // Show the actual error message if it's not empty
+        userFriendlyError = message;
+      }
+      
+      setError(userFriendlyError);
     } finally {
       setIsLoading(false);
     }

@@ -15,7 +15,7 @@ config({
 
   // The name of our dApp to show in wallet pop-ups
   "app.detail.title": "Plink",
-  "app.detail.icon": "https://placekitten.com/g/200/200",
+  "app.detail.icon": "/PlinkLogo.jpeg",
 
   // Contract aliases for testnet
   "0xPlink": process.env.NEXT_PUBLIC_CONTRACT_PLINK || "0x35ac5d420c563f8e",
