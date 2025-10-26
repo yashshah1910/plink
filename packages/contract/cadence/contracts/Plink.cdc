@@ -1,16 +1,24 @@
 import FungibleToken from "FungibleToken"
 import FlowToken from "FlowToken"
+import FlowTransactionScheduler from "FlowTransactionScheduler"
+import ViewResolver from "ViewResolver"
 
 access(all) contract Plink {
     
     // Storage and Public paths for the Collection
     access(all) let CollectionStoragePath: StoragePath
     access(all) let CollectionPublicPath: PublicPath
+    
+    // Storage path for UnlockHandler
+    access(all) let UnlockHandlerStoragePath: StoragePath
+    access(all) let UnlockHandlerPrivatePath: PrivatePath
 
     // Events
     access(all) event StashCreated(id: UInt64, ownerName: String, unlockDate: UFix64)
     access(all) event StashDeposit(id: UInt64, amount: UFix64, from: Address?, message: String)
     access(all) event StashWithdraw(id: UInt64, amount: UFix64, to: Address)
+    access(all) event StashUnlockScheduled(id: UInt64, scheduledTransactionID: UInt64, unlockDate: UFix64)
+    access(all) event StashAutoUnlocked(id: UInt64, scheduledTransactionID: UInt64)
 
     // Struct to track deposit/gift history
     access(all) struct DepositRecord {
@@ -33,11 +41,15 @@ access(all) contract Plink {
         access(all) let unlockDate: UFix64
         access(all) let vault: @FlowToken.Vault
         access(all) var depositHistory: [DepositRecord]
+        access(all) var isUnlocked: Bool
+        access(all) var scheduledUnlockTransactionID: UInt64?
 
         init(ownerName: String, unlockDate: UFix64) {
             self.ownerName = ownerName
             self.unlockDate = unlockDate
             self.depositHistory = []
+            self.isUnlocked = false
+            self.scheduledUnlockTransactionID = nil
             
             // Create empty FlowToken vault to store REAL FLOW
             self.vault <- FlowToken.createEmptyVault(vaultType: Type<@FlowToken.Vault>()) as! @FlowToken.Vault
@@ -59,10 +71,10 @@ access(all) contract Plink {
             emit StashDeposit(id: self.uuid, amount: amount, from: sender, message: message)
         }
 
-        // Function to withdraw REAL FLOW tokens (only after unlock date)
+        // Function to withdraw REAL FLOW tokens (only after unlock date or if auto-unlocked)
         access(all) fun withdraw(amount: UFix64): @{FungibleToken.Vault} {
             pre {
-                getCurrentBlock().timestamp >= self.unlockDate: "Stash is still locked"
+                self.isUnlocked || getCurrentBlock().timestamp >= self.unlockDate: "Stash is still locked"
                 self.vault.balance >= amount: "Insufficient balance in stash"
             }
             
@@ -72,6 +84,16 @@ access(all) contract Plink {
             emit StashWithdraw(id: self.uuid, amount: amount, to: self.owner?.address ?? panic("No owner"))
             
             return <-withdrawnTokens
+        }
+        
+        // Function to mark stash as unlocked (called by scheduled transaction)
+        access(contract) fun markAsUnlocked() {
+            self.isUnlocked = true
+        }
+        
+        // Function to set scheduled transaction ID
+        access(contract) fun setScheduledUnlockTransactionID(id: UInt64) {
+            self.scheduledUnlockTransactionID = id
         }
 
         // Function to get the current balance
@@ -115,6 +137,49 @@ access(all) contract Plink {
         access(all) view fun borrowStash(id: UInt64): &Stash? {
             return &self.stashes[id]
         }
+        
+        // Function to borrow a mutable reference to a Stash (contract only)
+        access(contract) fun borrowStashAuth(id: UInt64): auth(Mutate) &Stash? {
+            return &self.stashes[id]
+        }
+    }
+    
+    // UnlockHandler implements the TransactionHandler interface for scheduled unlocks
+    access(all) resource UnlockHandler: FlowTransactionScheduler.TransactionHandler, ViewResolver.Resolver {
+        // Capability to access the owner's collection
+        access(self) let collectionCap: Capability<auth(Mutate) &Collection>
+        
+        init(collectionCap: Capability<auth(Mutate) &Collection>) {
+            self.collectionCap = collectionCap
+        }
+        
+        // Execute the scheduled unlock transaction
+        access(FlowTransactionScheduler.Execute) fun executeTransaction(id: UInt64, data: AnyStruct?) {
+            // Data should contain the stash ID
+            let stashID = data as? UInt64 ?? panic("Invalid data: Expected stash ID")
+            
+            // Get reference to the collection using the capability
+            let collectionRef = self.collectionCap.borrow()
+                ?? panic("Could not borrow collection reference")
+            
+            // Get reference to the stash
+            let stashRef = collectionRef.borrowStashAuth(id: stashID)
+                ?? panic("Could not borrow stash reference")
+            
+            // Mark the stash as unlocked
+            stashRef.markAsUnlocked()
+            
+            emit StashAutoUnlocked(id: stashID, scheduledTransactionID: id)
+        }
+        
+        // ViewResolver implementation
+        access(all) view fun getViews(): [Type] {
+            return []
+        }
+        
+        access(all) fun resolveView(_ view: Type): AnyStruct? {
+            return nil
+        }
     }
 
     // Function to create an empty Collection
@@ -126,10 +191,17 @@ access(all) contract Plink {
     access(all) fun createStash(ownerName: String, unlockDate: UFix64): @Stash {
         return <-create Stash(ownerName: ownerName, unlockDate: unlockDate)
     }
+    
+    // Function to create an UnlockHandler
+    access(all) fun createUnlockHandler(collectionCap: Capability<auth(Mutate) &Collection>): @UnlockHandler {
+        return <-create UnlockHandler(collectionCap: collectionCap)
+    }
 
     init() {
         // Set the storage and public paths
         self.CollectionStoragePath = /storage/PlinkStashCollection
         self.CollectionPublicPath = /public/PlinkStashCollection
+        self.UnlockHandlerStoragePath = /storage/PlinkUnlockHandler
+        self.UnlockHandlerPrivatePath = /private/PlinkUnlockHandler
     }
 }

@@ -11,8 +11,8 @@ Plink is a decentralized gifting and savings platform built on the **Flow Blockc
 **Plink is currently deployed and running on Flow Testnet.**
 
 - **Network:** Flow Testnet
-- **Plink Contract Address:** `0x35ac5d420c563f8e`
-- **View Contract on Flow Explorer:** [https://testnet.flowscan.io/account/0x35ac5d420c563f8e](https://testnet.flowscan.io/account/0x35ac5d420c563f8e)
+- **Plink Contract Address:** `0x99aa32ecca179759`
+- **View Contract on Flow Explorer:** [https://testnet.flowscan.io/account/0x99aa32ecca179759](https://testnet.flowscan.io/account/0x99aa32ecca179759)
 
 The application uses $FLOW tokens for all transactions. USDC support is planned for future releases.
 

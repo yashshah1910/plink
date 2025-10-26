@@ -25,6 +25,20 @@
         "mainnet": "1654653399040a61",
         "testnet": "7e60df042a9c0868"
       }
+    },
+    "FlowTransactionScheduler": {
+      "source": "testnet://8c5303eaa26202d6.FlowTransactionScheduler",
+      "aliases": {
+        "emulator": "f8d6e0586b0a20c7",
+        "testnet": "8c5303eaa26202d6"
+      }
+    },
+    "ViewResolver": {
+      "source": "testnet://631e88ae7f1d7c20.ViewResolver",
+      "aliases": {
+        "emulator": "f8d6e0586b0a20c7",
+        "testnet": "631e88ae7f1d7c20"
+      }
     }
   },
   "networks": {
@@ -44,14 +58,21 @@
       "address": "0x360397b746e4c184",
       "key": {
         "type": "file",
-        "location": "testnet-account.pkey"
+        "location": "testnet-account-old.pkey"
       }
     },
-    "testnet-account": {
+    "testnet-account-old-1": {
       "address": "0x35ac5d420c563f8e",
       "key": {
         "type": "file",
-        "location": "testnet-account-new.pkey"
+        "location": "testnet-account-old-1.pkey"
+      }
+    },
+    "testnet-account": {
+      "address": "0x99aa32ecca179759",
+      "key": {
+        "type": "file",
+        "location": "testnet-account.pkey"
       }
     }
   },

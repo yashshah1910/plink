@@ -39,7 +39,7 @@ export default function PublicGiftingPage() {
       setError(null);
 
       const getStashScript = `
-        import Plink from 0x35ac5d420c563f8e
+        import Plink from 0x99aa32ecca179759
 
         access(all) struct StashInfo {
           access(all) let id: UInt64
@@ -133,7 +133,7 @@ export default function PublicGiftingPage() {
       setError(null);
 
       const addFundsTransaction = `
-        import Plink from 0x35ac5d420c563f8e
+        import Plink from 0x99aa32ecca179759
         import FungibleToken from 0x9a0766d93b6608b7
         import FlowToken from 0x7e60df042a9c0868
 
