@@ -42,6 +42,7 @@ transaction(stashID: UInt64) {
         
         // Step 4: Estimate fees for scheduling
         let estimate = FlowTransactionScheduler.estimate(
+            data: stashID,
             timestamp: unlockDate,
             priority: FlowTransactionScheduler.Priority.Medium,
             executionEffort: 100 // Estimated effort for unlock operation
@@ -72,11 +73,11 @@ transaction(stashID: UInt64) {
         
         let scheduledID = scheduledTransaction.id
         
-        // Step 7: Store the scheduled transaction ID in the stash
-        let stashAuthRef = collectionRef.borrowStashAuth(id: stashID)
-            ?? panic("Could not borrow authorized Stash reference")
+        // Step 7: Store the scheduled transaction ID in the stash using the new contract function
+        let collectionAuthRef = signer.storage.borrow<auth(Mutate) &Plink.Collection>(from: Plink.CollectionStoragePath)
+            ?? panic("Could not borrow authorized Collection reference")
         
-        stashAuthRef.setScheduledUnlockTransactionID(id: scheduledID)
+        Plink.scheduleUnlock(collectionRef: collectionAuthRef, stashID: stashID, scheduledTransactionID: scheduledID)
         
         // Destroy the receipt (we've stored the ID)
         destroy scheduledTransaction

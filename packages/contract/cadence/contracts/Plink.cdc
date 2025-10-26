@@ -196,6 +196,20 @@ access(all) contract Plink {
     access(all) fun createUnlockHandler(collectionCap: Capability<auth(Mutate) &Collection>): @UnlockHandler {
         return <-create UnlockHandler(collectionCap: collectionCap)
     }
+    
+    // Function to schedule an unlock for a stash (must be called by the owner)
+    access(all) fun scheduleUnlock(
+        collectionRef: auth(Mutate) &Collection, 
+        stashID: UInt64,
+        scheduledTransactionID: UInt64
+    ) {
+        let stashRef = collectionRef.borrowStashAuth(id: stashID)
+            ?? panic("Could not borrow stash reference")
+        
+        stashRef.setScheduledUnlockTransactionID(id: scheduledTransactionID)
+        
+        emit StashUnlockScheduled(id: stashID, scheduledTransactionID: scheduledTransactionID, unlockDate: stashRef.unlockDate)
+    }
 
     init() {
         // Set the storage and public paths

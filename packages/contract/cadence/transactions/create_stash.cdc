@@ -1,7 +1,7 @@
 import "Plink"
-import "FlowTransactionScheduler"
 import "FlowToken"
 import "FungibleToken"
+import "FlowTransactionScheduler"
 
 transaction(ownerName: String, unlockDate: UFix64) {
 
@@ -29,8 +29,7 @@ transaction(ownerName: String, unlockDate: UFix64) {
 
         log("✅ Stash created successfully for ".concat(ownerName))
         
-        // Step 4: Schedule automatic unlock by default
-        // Check if unlock date is in the future
+        // Step 4: Schedule automatic unlock if unlock date is in the future
         if getCurrentBlock().timestamp >= unlockDate {
             log("⚠️ Unlock date is not in the future, skipping auto-unlock scheduling")
         } else {
@@ -50,6 +49,7 @@ transaction(ownerName: String, unlockDate: UFix64) {
 
             // Estimate fees
             let estimate = FlowTransactionScheduler.estimate(
+                data: stashID,
                 timestamp: unlockDate,
                 priority: FlowTransactionScheduler.Priority.Medium,
                 executionEffort: 100
@@ -79,11 +79,11 @@ transaction(ownerName: String, unlockDate: UFix64) {
 
                 let scheduledID = scheduledTransaction.id
 
-                // Store the scheduled transaction ID
-                let stashAuthRef = collectionRef.borrowStashAuth(id: stashID)
-                    ?? panic("Could not borrow authorized Stash reference")
-
-                stashAuthRef.setScheduledUnlockTransactionID(id: scheduledID)
+                // Store the scheduled transaction ID using the contract function
+                let collectionAuthRef = signer.storage.borrow<auth(Mutate) &Plink.Collection>(from: Plink.CollectionStoragePath)
+                    ?? panic("Could not borrow authorized Collection reference")
+                
+                Plink.scheduleUnlock(collectionRef: collectionAuthRef, stashID: stashID, scheduledTransactionID: scheduledID)
 
                 destroy scheduledTransaction
 
