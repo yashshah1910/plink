@@ -41,7 +41,7 @@ export default function CreateStash() {
     }
 
     // Convert date to Unix timestamp
-    const unlockTimestamp = new Date(formData.unlockDate).getTime() / 1000;
+    const unlockTimestamp = 1761461148;
 
     // Validate unlock date is in the future
     if (unlockTimestamp <= Date.now() / 1000) {
@@ -55,29 +55,95 @@ export default function CreateStash() {
 
       const createStashTransaction = `
         import Plink from 0x99aa32ecca179759
+        import FlowToken from 0x7e60df042a9c0868
+        import FungibleToken from 0x9a0766d93b6608b7
+        import FlowTransactionScheduler from 0x8c5303eaa26202d6
 
         transaction(ownerName: String, unlockDate: UFix64) {
-          prepare(signer: auth(Storage, Capabilities) &Account) {
-            // Check if a Plink Collection already exists at the storage path
+          prepare(signer: auth(Storage, Capabilities, IssueStorageCapabilityController, PublishCapability, SaveValue, BorrowValue) &Account) {
+            
+            // Step 1: Set up the Collection if it doesn't exist
             if signer.storage.borrow<&Plink.Collection>(from: Plink.CollectionStoragePath) == nil {
-              // Create a new empty collection and save it to the account's storage
               signer.storage.save(<-Plink.createEmptyCollection(), to: Plink.CollectionStoragePath)
               
-              // Create and publish a public capability
               let capability = signer.capabilities.storage.issue<&{Plink.CollectionPublic}>(Plink.CollectionStoragePath)
               signer.capabilities.publish(capability, at: Plink.CollectionPublicPath)
             }
             
-            // Create the new Stash
+            // Step 2: Create the new Stash
             let newStash <- Plink.createStash(ownerName: ownerName, unlockDate: unlockDate)
+            let stashID = newStash.uuid
             
-            // Deposit the Stash into the user's Collection
+            // Step 3: Deposit the Stash into the user's Collection
             let collectionRef = signer.storage.borrow<&Plink.Collection>(from: Plink.CollectionStoragePath)
               ?? panic("Could not borrow a reference to the Stash Collection")
             
             collectionRef.deposit(stash: <-newStash)
 
             log("✅ Stash created successfully for ".concat(ownerName))
+            
+            // Step 4: Schedule automatic unlock if unlock date is in the future
+            if getCurrentBlock().timestamp >= unlockDate {
+              log("⚠️ Unlock date is not in the future, skipping auto-unlock scheduling")
+            } else {
+              // Set up UnlockHandler if needed
+              if signer.storage.borrow<&Plink.UnlockHandler>(from: Plink.UnlockHandlerStoragePath) == nil {
+                let collectionCap = signer.capabilities.storage.issue<auth(Mutate) &Plink.Collection>(
+                  Plink.CollectionStoragePath
+                )
+                let handler <- Plink.createUnlockHandler(collectionCap: collectionCap)
+                signer.storage.save(<-handler, to: Plink.UnlockHandlerStoragePath)
+              }
+
+              // Issue capability to the UnlockHandler
+              let handlerCap = signer.capabilities.storage.issue<auth(FlowTransactionScheduler.Execute) &{FlowTransactionScheduler.TransactionHandler}>(
+                Plink.UnlockHandlerStoragePath
+              )
+
+              // Estimate fees
+              let estimate = FlowTransactionScheduler.estimate(
+                data: stashID,
+                timestamp: unlockDate,
+                priority: FlowTransactionScheduler.Priority.Medium,
+                executionEffort: 100
+              )
+
+              if estimate.error != nil {
+                log("⚠️ Could not estimate scheduling: ".concat(estimate.error!))
+              } else {
+                let requiredFee = estimate.flowFee ?? 0.0
+
+                // Withdraw fees
+                let vaultRef = signer.storage.borrow<auth(FungibleToken.Withdraw) &FlowToken.Vault>(
+                  from: /storage/flowTokenVault
+                ) ?? panic("Could not borrow FlowToken vault")
+
+                let fees <- vaultRef.withdraw(amount: requiredFee) as! @FlowToken.Vault
+
+                // Schedule the unlock
+                let scheduledTransaction <- FlowTransactionScheduler.schedule(
+                  handlerCap: handlerCap,
+                  data: stashID,
+                  timestamp: unlockDate,
+                  priority: FlowTransactionScheduler.Priority.Medium,
+                  executionEffort: 100,
+                  fees: <-fees
+                )
+
+                let scheduledID = scheduledTransaction.id
+
+                // Store the scheduled transaction ID using the contract function
+                let collectionAuthRef = signer.storage.borrow<auth(Mutate) &Plink.Collection>(from: Plink.CollectionStoragePath)
+                  ?? panic("Could not borrow authorized Collection reference")
+                
+                Plink.scheduleUnlock(collectionRef: collectionAuthRef, stashID: stashID, scheduledTransactionID: scheduledID)
+
+                destroy scheduledTransaction
+
+                log("✅ Scheduled automatic unlock at timestamp ".concat(unlockDate.toString())
+                  .concat(". Scheduled transaction ID: ").concat(scheduledID.toString()))
+              }
+            }
           }
         }
       `;

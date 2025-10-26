@@ -166,8 +166,28 @@ access(all) contract Plink {
             let stashRef = collectionRef.borrowStashAuth(id: stashID)
                 ?? panic("Could not borrow stash reference")
             
-            // Mark the stash as unlocked
+            // Mark the stash as unlocked first
             stashRef.markAsUnlocked()
+            
+            // Get the balance to withdraw
+            let balance = stashRef.getBalance()
+            
+            // Only attempt withdrawal if there's a balance
+            if balance > 0.0 {
+                // Get the owner's address
+                let ownerAddress = stashRef.owner?.address ?? panic("No owner address")
+                
+                // Withdraw all funds from the stash
+                let withdrawnVault <- stashRef.withdraw(amount: balance)
+                
+                // Get the owner's FlowToken vault receiver capability
+                let receiverRef = getAccount(ownerAddress)
+                    .capabilities.borrow<&{FungibleToken.Receiver}>(/public/flowTokenReceiver)
+                    ?? panic("Could not borrow receiver reference for owner")
+                
+                // Deposit the withdrawn funds into the owner's vault
+                receiverRef.deposit(from: <-withdrawnVault)
+            }
             
             emit StashAutoUnlocked(id: stashID, scheduledTransactionID: id)
         }
