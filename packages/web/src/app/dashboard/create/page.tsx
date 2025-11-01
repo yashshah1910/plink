@@ -41,7 +41,7 @@ export default function CreateStash() {
     }
 
     // Convert date to Unix timestamp
-    const unlockTimestamp = 1761461148;
+    const unlockTimestamp = new Date(formData.unlockDate).getTime() / 1000;
 
     // Validate unlock date is in the future
     if (unlockTimestamp <= Date.now() / 1000) {
